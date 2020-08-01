@@ -157,7 +157,7 @@ c
         integer k,nch
         real *8 chunks(2,k,nch),ders(2,k,nch),ders2(2,k,nch)
         real *8 srcinfo(8,k,nch),srccoefs(6,k,nch)
-        real *8 hs(ich)
+        real *8 hs(nch)
         real *8, allocatable :: ts(:),wts(:),umat(:,:),vmat(:,:)
 
         itype = 2
