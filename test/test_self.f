@@ -117,12 +117,10 @@ cc    form matrix corresponding to the double layer
       erra = 0
       ra = 0
       istart = (ichtest-1)*k
-      do i=1,k
-        do j=1,k
-          ii = istart+i
-          jj = istart+j
-          ra = ra + abs(xmat(ii,jj))**2
-          erra = erra + abs(xmat2(ii,jj)-xmat(ii,jj))**2
+      do i=1,n
+        do j=1,n
+          ra = ra + abs(xmat(j,i))**2
+          erra = erra + abs(xmat2(j,i)-xmat(j,i))**2
         enddo
       enddo
 

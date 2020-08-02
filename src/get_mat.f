@@ -118,6 +118,7 @@ c
         ismat = (isch-1)*k + 1
         do itch=1,nch
           itmat = (itch-1)*k + 1
+          print *, itch,isch
           do i=1,k
             do j=1,k
               xtmp(j,i) = 0
@@ -131,14 +132,14 @@ c
      2         ndi,ipars,xs0,whts0,ainterp,xtmp)
 
           else
-cc            do j=1,k
-cc              call zadapquad(k,srccoefs(1,1,isch),srcinfo(1,j,itch),
-cc     1          fker,8,ndd,dpars,ndz,zpars,ndi,ipars,umat,m,tsquad,
-cc     2          wquad,xtmp2)
-cc              do i=1,k
-cc                xtmp(j,i) = xtmp2(i)
-cc              enddo
-cc            enddo
+            do j=1,k
+              call zadapquad(k,srccoefs(1,1,isch),srcinfo(1,j,itch),
+     1          fker,8,ndd,dpars,ndz,zpars,ndi,ipars,umat,m,tsquad,
+     2          wquad,xtmp2)
+              do i=1,k
+                xtmp(j,i) = xtmp2(i)
+              enddo
+            enddo
           endif
           call zinsertmat(k,k,xtmp,itmat,ismat,n,n,xmat)
         enddo
@@ -235,14 +236,14 @@ c
         vals(1:k,j) = 0
       enddo
 
-      call adinrecm(ier,stack,a,b,k,srccoefs,srcvals,fker,
+      call adinrecm(ier,stack,a,b,k,srccoefs,targ,fker,
      1   ndt,ndd,dpars,ndz,zpars,ndi,ipars,m,ts0,w0,vals,nnmax,
      2   eps,rints,maxdepth,maxrec,numit,value2,value3)
 
 c
 c      convert rints to matrix entries
 c
-
+      call zrmatmatt(1,k,rints,k,umat,xmat)
 
       return
       end
@@ -386,7 +387,33 @@ c
 
       return
       end
+c
+c
+c
+c
+c
+      subroutine zrmatmatt(m, n, a, k, b, c)
+      implicit double precision (a-h,o-z)
+      complex *16 :: a(n,m),c(k,m)
+      real *8 :: b(n,k)
+      complex *16, allocatable :: bz(:,:)
+      character *1 :: transa, transb
+      complex *16 :: alpha, beta
 
-      
+
+      allocate(bz(n,k))
+      bz = 0
+      call dcopy(n*k,b,1,bz,2)
+
+      transa = 'T'
+      transb = 'N'
+      alpha = 1
+      beta = 0
+
+      call zgemm(transa, transb, k, m, n, alpha, bz, n, a, n,
+     1     beta, c, k)
+
+      return
+      end
 
 
