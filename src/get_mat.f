@@ -118,7 +118,6 @@ c
         ismat = (isch-1)*k + 1
         do itch=1,nch
           itmat = (itch-1)*k + 1
-          print *, itch,isch
           do i=1,k
             do j=1,k
               xtmp(j,i) = 0
@@ -133,6 +132,7 @@ c
 
           else
             do j=1,k
+              xtmp2 = 0
               call zadapquad(k,srccoefs(1,1,isch),srcinfo(1,j,itch),
      1          fker,8,ndd,dpars,ndz,zpars,ndi,ipars,umat,m,tsquad,
      2          wquad,xtmp2)
@@ -225,7 +225,7 @@ c
       maxrec = 0
       numit = 0
       
-      maxdepth = 200
+      maxdepth = 50
       allocate(stack(2,maxdepth),vals(k,maxdepth))
 
       nnmax = 100000
@@ -235,6 +235,8 @@ c
         stack(2,j) = 0
         vals(1:k,j) = 0
       enddo
+
+
 
       call adinrecm(ier,stack,a,b,k,srccoefs,targ,fker,
      1   ndt,ndd,dpars,ndz,zpars,ndi,ipars,m,ts0,w0,vals,nnmax,
@@ -271,14 +273,14 @@ c
       stack(1,1) = a
       stack(2,1) = b
 
-      call oneintmu(a,b,k,srccoefs,srcvals,fker,ndt,ndd,dpars,ndz,
+      call oneintmu(a,b,k,srccoefs,targ,fker,ndt,ndd,dpars,ndz,
      1   zpars,ndi,ipars,m,ts0,w0,vals(1,1))
       
 c 
 c       recursively integrate the thing
 c 
       j=1
-      do i=1,n
+      do i=1,k
         rints(i)=0
       enddo
 c 
@@ -291,9 +293,9 @@ c
 c       subdivide the current subinterval
 c 
          c=(stack(1,j)+stack(2,j))/2
-         call oneintmu(stack(1,j),c,k,srccoefs,srcvals,fker,ndt,ndd,
+         call oneintmu(stack(1,j),c,k,srccoefs,targ,fker,ndt,ndd,
      1      dpars,ndz,zpars,ndi,ipars,m,ts0,w0,value2)
-         call oneintmu(c,stack(2,j),k,srccoefs,srcvals,fker,ndt,ndd,
+         call oneintmu(c,stack(2,j),k,srccoefs,targ,fker,ndt,ndd,
      1      dpars,ndz,zpars,ndi,ipars,m,ts0,w0,value3)
 c 
           dd=0
@@ -338,7 +340,7 @@ c
 c 
 c       if the depth of the recursion has become excessive - bomb
 c 
-        if(j .le. maxdepth) goto 3000
+        if(j .lt. maxdepth) goto 3000
         ier=8
         return
  3000 continue
@@ -377,12 +379,19 @@ c
         tt = u*t(i)+v
         call legepols(tt,k-1,pols) 
         call dgemv('n',6,k,alpha,srccoefs,6,pols,1,beta,srctmp,1)
+        dst = sqrt(srctmp(3)**2 + srctmp(4)**2)
+        srctmp(7) = srctmp(4)/dst
+        srctmp(8) = -srctmp(3)/dst
+        val = 0
         call fker(srctmp,ndt,targ,ndd,dpars,ndz,zpars,ndi,
      1      ipars,val)
-        dst = sqrt(srctmp(3)**2 + srctmp(4)**2)
         do j=1,k
           vals(j) = vals(j) + dst*w(i)*val*pols(j) 
         enddo
+      enddo
+
+      do i=1,k
+        vals(i) = vals(i)*u
       enddo
 
       return

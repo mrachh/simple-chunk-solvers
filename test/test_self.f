@@ -124,6 +124,12 @@ cc    form matrix corresponding to the double layer
         enddo
       enddo
 
+      ii = k+1
+      j = 1
+      print *, xmat2(17,1)
+      print *, xmat(17,1)
+
+
       call prin2('erra=*',sqrt(erra),1)
       call prin2('ra=*',sqrt(ra),1)
 
