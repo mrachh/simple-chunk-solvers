@@ -29,7 +29,7 @@
       done = 1
       pi = 4*atan(done)
 
-      zk = 1.2d0 + 0.1*eye
+      zk = 1.2d0 + 0.0d0*eye
 
       eps = 1.0d-12
       ifclosed = 1
@@ -48,8 +48,8 @@
       ifclosed = 1
       chsmall = 1000
 
-      xyin(1) = 0.01d0
-      xyin(2) = -0.07d0
+      xyin(1) = 0.1d0
+      xyin(2) = -0.02d0
 
       allocate(chunks(2,k,maxc),ders(2,k,maxc),ders2(2,k,maxc))
       allocate(adjs(2,maxc),hs(maxc))
@@ -67,7 +67,7 @@
       
       t1 = second()
 
-      a2 = eye*(0.8 + 1.2*zk) 
+      a2 = eye*(0.8 + 1.2*zk)
       b2 = 1.0d0
 
       allocate(srcvals(8,k,nch),srccoefs(6,k,nch),whts(k,nch))
@@ -87,24 +87,30 @@
       zpars(1) = zk
       zpars(2) = a2
       zpars(3) = b2
+
+      call cpu_time(t1)
+C$       t1 = omp_get_wtime()
+
+      call helm2d_comb_dir_mat(k,nch,n,srcvals,srccoefs,zpars,xmat)
+
+      call cpu_time(t2)
+C$      t2 = omp_get_wtime()      
       
-      call zgetmat_bdry(k,nch,n,srcvals,srccoefs,h2d_comb,8,0,
-     1  dpars,3,zpars,0,ipars,xmat)
-      
+      call prin2('matrix generation time=*',t2-t1,1)
+
       allocate(zrhs(k,nch),zsoln(k,nch))
 
       do ich=1,nch
         do j=1,k
-          call h2d_slp(xyin,8,srcvals(1,j,ich),ndd,dpars,1,zk,0,
+          call h2d_slp(xyin,8,srcvals(1,j,ich),0,dpars,1,zk,0,
      1       ipars,zrhs(j,ich))
         enddo
       enddo
 
       call prinf('n=*',n,1)
 
-      call prin2('zrhs=*',zrhs,2*n)
 
-      zid = b2*0.5d0
+      zid = b2/2
       numit = 200
       niter = 0
 
@@ -116,13 +122,12 @@
      1   zsoln)
       call prin2('rres=*',rres,1)
 
-
 c
 c
 c    test soln at an exterior point
 c
-      targ(1) = 5.1d0
-      targ(2) = 3.1d0
+      targ(1) = 5.31d0
+      targ(2) = 3.33d0
 
       call h2d_slp(xyin,2,targ,0,dpars,1,zk,0,ipars,potex)
       call prin2('zpars=*',zpars,6)
@@ -130,7 +135,8 @@ c
       pot = 0
       do ich=1,nch
         do j=1,k
-          call h2d_comb(targ,8,srcvals(1,j,ich),0,dpars,3,zpars,0,
+          zz = 0
+          call h2d_comb(srcvals(1,j,ich),2,targ,0,dpars,3,zpars,0,
      1      ipars,zz)
           pot = pot + zsoln(j,ich)*zz*whts(j,ich)
 cc          call prin2('zz=*',zz,2)

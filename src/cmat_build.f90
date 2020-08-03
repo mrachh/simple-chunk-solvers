@@ -973,21 +973,6 @@
 
 
       
-      subroutine zinsertmat(km, kn, amat, iloc, jloc, m, n, cmat)
-        implicit real *8 (a-h,o-z)
-        complex *16 :: amat(km,kn), cmat(m,n)
-
-        do j = 1,kn
-          do i = 1,km
-            cmat(iloc-1+i,jloc-1+j) = amat(i,j)
-          enddo
-        enddo
-
-        return
-      end subroutine
-
-
-
 
 
 

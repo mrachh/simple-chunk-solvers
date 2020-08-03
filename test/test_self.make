@@ -32,7 +32,8 @@ OBJECTS =  test_self.o \
   $(SRC)/quads.o \
   $(SRC)/chunks.o \
   $(SRC)/helm_kernels.o \
-  $(SRC)/get_mat.o \
+  $(SRC)/get_mat_guru.o \
+  $(SRC)/helm_mats.o \
   $(SRC)/cmat_build.o \
 
 

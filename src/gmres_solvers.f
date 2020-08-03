@@ -17,7 +17,6 @@
 c
 c      compute norm of right hand side and initialize v
 c 
-      rb = 0
 
       do i=1,numit
         cs(i) = 0
@@ -25,6 +24,7 @@ c
       enddo
 
 
+      rb = 0
 c
 C$OMP PARALLEL DO DEFAULT(SHARED) REDUCTION(+:rb)
       do i=1,n

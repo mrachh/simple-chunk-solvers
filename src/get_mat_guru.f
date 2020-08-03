@@ -1,3 +1,7 @@
+
+
+
+
       subroutine zgetmat_bdry(k,nch,n,srcinfo,srccoefs,
      1    fker,ndt,ndd,dpars,ndz,zpars,ndi,ipars,xmat)
 c
@@ -114,6 +118,8 @@ c
       allocate(tsquad(m),wquad(m))
       call legeexps(itype,m,tsquad,utmp,vtmp,wquad) 
 
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(isch,ismat,itch,itmat)
+C$OMP$PRIVATE(i,j,xtmp,xtmp2)
       do isch=1,nch
         ismat = (isch-1)*k + 1
         do itch=1,nch
@@ -129,7 +135,6 @@ c
             call zself_buildmat(k,srccoefs(1,1,isch),
      1         srcinfo(1,1,itch),fker,ndt,ndd,dpars,ndz,zpars,
      2         ndi,ipars,xs0,whts0,ainterp,xtmp)
-
           else
             do j=1,k
               xtmp2 = 0
@@ -144,6 +149,7 @@ c
           call zinsertmat(k,k,xtmp,itmat,ismat,n,n,xmat)
         enddo
       enddo
+C$OMP END PARALLEL DO      
 
       return
       end

@@ -8,7 +8,7 @@ FEND = -L/usr/local/opt/openblas/lib -lopenblas
 #FEND = -lopenblas
 
 ifeq ($(OMP),ON)
-FFLAGS = -O2 -c -w --openmp
+FFLAGS = -O2 -c -w --openmp -std=legacy
 FLINK = gfortran -w -o $(EXEC) --openmp
 
 endif
@@ -32,7 +32,8 @@ OBJECTS =  ext_dir_solver.o \
   $(SRC)/quads.o \
   $(SRC)/chunks.o \
   $(SRC)/helm_kernels.o \
-  $(SRC)/get_mat.o \
+  $(SRC)/get_mat_guru.o \
+  $(SRC)/helm_mats.o \
   $(SRC)/gmres_solvers.o \
 
 
