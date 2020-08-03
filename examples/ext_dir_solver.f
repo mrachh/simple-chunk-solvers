@@ -75,18 +75,16 @@
       call chunks_to_srcinfo(k,nch,chunks,ders,ders2,hs,srcvals,
      1  srccoefs,whts)
 
-      ra = 0
-      do ich=1,nch
-        do j=1,k
-          ra = ra + whts(j,ich)
-        enddo
-      enddo
-
       n = k*nch
 
       zpars(1) = zk
       zpars(2) = a2
       zpars(3) = b2
+
+c
+c  get the matrix
+c
+
 
       call cpu_time(t1)
 C$       t1 = omp_get_wtime()
@@ -107,20 +105,14 @@ C$      t2 = omp_get_wtime()
         enddo
       enddo
 
-      call prinf('n=*',n,1)
-
-
       zid = b2/2
       numit = 200
       niter = 0
 
       eps = 1.0d-15
 
-      call prin2('zid=*',zid,2)
-
       call zgmres_solver(n,xmat,zid,zrhs,numit,eps,niter,errs,rres,
      1   zsoln)
-      call prin2('rres=*',rres,1)
 
 c
 c
@@ -130,7 +122,6 @@ c
       targ(2) = 3.33d0
 
       call h2d_slp(xyin,2,targ,0,dpars,1,zk,0,ipars,potex)
-      call prin2('zpars=*',zpars,6)
       
       pot = 0
       do ich=1,nch
