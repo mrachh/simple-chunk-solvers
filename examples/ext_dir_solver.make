@@ -15,11 +15,6 @@ endif
 
 SRC = ../src
 
-EFOL = ../data
-
-FL = ../../../forleslie
-
-
 .PHONY: all clean list
 
 OBJECTS =  ext_dir_solver.o \
@@ -50,10 +45,8 @@ OBJECTS =  ext_dir_solver.o \
 
 all: $(OBJECTS)
 	rm -f $(EXEC)
-	mkdir -p $(EFOL)
 	$(FLINK) $(OBJECTS) $(FEND)
-	mv $(EXEC) ./$(EFOL)/
-	cd $(EFOL) && ./$(EXEC)
+	./$(EXEC)
 
 clean:
 	rm -f $(OBJECTS)
