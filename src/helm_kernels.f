@@ -116,8 +116,6 @@ c
       data zs/(0.0d0,0.25d0)/
 
       zk = zpars(1)
-      ima = dcmplx(0.0d0,1.0d0)
-      zs = ima/4.0d0
       rr2 = (srcinfo(1)-targinfo(1))**2 + (srcinfo(2)-targinfo(2))**2
       rr = dsqrt(rr2)
       rinv = 1/rr

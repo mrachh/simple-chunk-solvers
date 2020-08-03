@@ -184,6 +184,7 @@ c
           dst = sqrt(srcinfo(3)**2 + srcinfo(4)**2)
           srcinfo(7) = srcinfo(4)/dst
           srcinfo(8) = -srcinfo(3)/dst
+
           call fker(srcinfo,8,srcvals(1,i),ndd,dpars,ndz,zpars,ndi,
      1      ipars,wtmp2(j))
           wtmp2(j) = wtmp2(j)*whts0(j,i)*dst
@@ -229,7 +230,7 @@ c
       allocate(stack(2,maxdepth),vals(k,maxdepth))
 
       nnmax = 100000
-      eps = 1.0d-13
+      eps = 1.0d-14
       do j=1,maxdepth
         stack(1,j) = 0
         stack(2,j) = 0
@@ -265,6 +266,7 @@ c
       integer ipars(ndi)
       real *8 ts0(m),w0(m)
       complex *16 vals(k,maxdepth),rints(k),value2(k),value3(k)
+      external fker
       
       
 
@@ -331,8 +333,8 @@ c       down the stack
 c 
         stack(1,j+1)=stack(1,j)
         stack(2,j+1)=(stack(1,j)+stack(2,j))/2
-        vals(1:k,j+1) = value2
-        vals(1:k,j) = value3
+        vals(1:k,j+1) = value2(1:k)
+        vals(1:k,j) = value3(1:k)
 c 
         stack(1,j)=(stack(1,j)+stack(2,j))/2
 c 
@@ -358,7 +360,7 @@ c
       implicit real *8 (a-h,o-z)
       real *8 a,b
       real *8 srccoefs(6,k),targ(ndt)
-      real *8 srctmp(8),pols(8)
+      real *8 srctmp(8),pols(k)
       real *8 dpars(ndd)
       complex *16 zpars(ndz)
       integer ipars(ndi)
@@ -425,4 +427,17 @@ c
       return
       end
 
+
+      subroutine zinsertmat(km, kn, amat, iloc, jloc, m, n, cmat)
+        implicit real *8 (a-h,o-z)
+        complex *16 :: amat(km,kn), cmat(m,n)
+
+        do j = 1,kn
+          do i = 1,km
+            cmat(iloc-1+i,jloc-1+j) = amat(i,j)
+          enddo
+        enddo
+
+      return
+      end
 

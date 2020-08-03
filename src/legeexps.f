@@ -117,7 +117,7 @@ c
 c 
         subroutine legeexps(itype,n,x,u,v,whts)
         implicit real *8 (a-h,o-z)
-        dimension x(1),whts(1),u(n,n),v(n,n)
+        dimension x(*),whts(*),u(n,n),v(n,n)
 c 
 c         this subroutine constructs the gaussiaqn nodes
 c         on the interval [-1,1], and the weights for the

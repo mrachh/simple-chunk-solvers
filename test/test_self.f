@@ -90,7 +90,7 @@ cc    form matrix corresponding to the double layer
       t1 = second()
 
       a2 = eye*(0.8 + 1.2*zk) 
-      b2 = 1
+      b2 = 1.0d0
 
       call zbuildmat(norder,wgeo,zkernel_cfie,a2,b2,gk2d_new,zk,
      1      pars1,pars2,nout,xmat)
@@ -124,11 +124,6 @@ cc    form matrix corresponding to the double layer
         enddo
       enddo
 
-      ii = k+1
-      j = 1
-      print *, xmat2(17,1)
-      print *, xmat(17,1)
-
 
       call prin2('erra=*',sqrt(erra),1)
       call prin2('ra=*',sqrt(ra),1)
@@ -153,7 +148,7 @@ c-----------------------------------------------------------
         complex *16, intent(out) :: val, grad(2), hess(2,2)
 
         complex *16 :: z, h0, h1, h1p
-        complex *16, parameter :: ima = (0,1)
+        complex *16, parameter :: ima = (0,1.0d0)
 
         !
         ! return the value of h0, its gradient, and its hessian using

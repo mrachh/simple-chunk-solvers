@@ -129,7 +129,7 @@ c
 c
 c
         subroutine chunks_to_srcinfo(k,nch,chunks,ders,ders2,hs,
-     1     srcinfo,srccoefs)
+     1     srcinfo,srccoefs,whts)
 c
 c  This subroutine returns the chunks info into the new format 
 c  and stores it in the srcinfo, srccoefs arrays.
@@ -140,7 +140,7 @@ c      srcinfo(8,k,nch)
 c        srcinfo(1:2,npts) x(t),y(t)
 c        srcinfo(3:4,npts) dxdt(t),dydt(t)
 c        srcinfo(5:6,npts) d2xdt2(t),d2ydt2(t)
-c        srcinfo(7:8,npts) rnx(t),rny(t) = -dydt/dsdt,dxdt/dsdt
+c        srcinfo(7:8,npts) rnx(t),rny(t) = dydt/dsdt,-dxdt/dsdt
 c
 c      srccoefs(6,k,nch)
 c        srcinfo(1:2,k,nch) xcoefs,ycoefs
@@ -157,7 +157,7 @@ c
         integer k,nch
         real *8 chunks(2,k,nch),ders(2,k,nch),ders2(2,k,nch)
         real *8 srcinfo(8,k,nch),srccoefs(6,k,nch)
-        real *8 hs(nch)
+        real *8 hs(nch),whts(k,nch)
         real *8, allocatable :: ts(:),wts(:),umat(:,:),vmat(:,:)
 
         itype = 2
@@ -173,8 +173,9 @@ c
             srcinfo(5,j,ich) = ders2(1,j,ich)*hs(ich)**2
             srcinfo(6,j,ich) = ders2(2,j,ich)*hs(ich)**2
             dsdt = sqrt(ders(1,j,ich)**2 + ders(2,j,ich)**2)
-            srcinfo(7,j,ich) = -ders(2,j,ich)/dsdt
-            srcinfo(8,j,ich) = ders(1,j,ich)/dsdt
+            srcinfo(7,j,ich) = ders(2,j,ich)/dsdt
+            srcinfo(8,j,ich) = -ders(1,j,ich)/dsdt
+            whts(j,ich) = dsdt*hs(ich)*wts(j)
           enddo
 
           do j=1,k
