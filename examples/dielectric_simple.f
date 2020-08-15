@@ -7,7 +7,7 @@ c
 
       parameter (maxc = 10000)
  
-      complex *16 zk,eye
+      complex *16 zk0,zk,eye
       complex *16, allocatable :: xmat(:,:)
       real *8 pars(1000)
       real *8, allocatable :: chunks(:,:,:),ders(:,:,:),ders2(:,:,:)
@@ -41,13 +41,10 @@ c
       pi = 4*atan(done)
 
       zk0 = 1.0d0 + 0.0d0*eye
-      zk1 = 1.0d0 + 0.0d0*eye
+      zk1 = 1.3d0 + 0.0d0*eye
 
       eps = 1.0d-7
-      ifclosed = 1
-      ier = 0
 
-      lused = 0
       k = 16
 
       nover = 2
@@ -102,9 +99,9 @@ c
       n = k*nch
 c
       a0 = 1.0d0
-      b0 = 1.0d0
-      a1 = 1.0d0
-      b1 = 1.0d0
+      b0 = 1.2d0
+      a1 = 1.3d0
+      b1 = 1.4d0
       zpars(1) = zk0
       zpars(2) = a0
       zpars(3) = b0
@@ -133,12 +130,8 @@ C$      t2 = omp_get_wtime()
 
       do ich=1,nch
         do j=1,k
-           call ghelm(p1,zk0,i1,xyin(1),xyin(2),
-     1          srcvals(1,j,ich),srcvals(2,j,ich),zz)
-           write(37,*) ' zz from ghelm = ',zz
            call h2d_slp(xyin,8,srcvals(1,j,ich),0,dpars,1,zk0,0,
      1       ipars,zz)
-           write(37,*) ' zz from h2d_slp = ',zz
            zrhs(j,ich,1) = zz*zpars(2)/zq
            call h2d_slp(xyout,8,srcvals(1,j,ich),0,dpars,1,zk1,0,
      1       ipars,zz)
@@ -151,16 +144,9 @@ C$      t2 = omp_get_wtime()
            call h2d_sprime(xyin,8,srcvals(1,j,ich),0,dpars,1,zk0,0,
      1       ipars,zz)
            zrhs(j,ich,2) = zz*zpars(3)
-           write(38,*) ' zz from sprime = ',zz
-         call ghelmgrad(srcvals(1,j,ich),srcvals(2,j,ich),
-     1        xyin(1),xyin(2),p1,zk0,i1,i2,gx,gy)
-         zz = gx*srcvals(7,j,ich)+gy*srcvals(8,j,ich)
-           write(38,*) ' zz from ghelmgrad = ',zz
-
            call h2d_sprime(xyout,8,srcvals(1,j,ich),0,dpars,1,zk1,0,
      1       ipars,zz)
           zrhs(j,ich,2) = zrhs(j,ich,2) - zz*zpars(6)
-
         enddo
       enddo
 
@@ -171,10 +157,12 @@ ccc      zid = b2/2
 
       eps = 1.0d-15
 
-      call prin2(' zrhs is *',zrhs,2*k*nch*2)
-ccc      call zgmres_solver(n,xmat,zid,zrhs,numit,eps,niter,errs,rres,
-ccc     1   zsoln)
-ccc      call prin2(' zsoln is *',zsoln,2*k*nch*2)
+      call prin2(' zrhs1 is *',zrhs(1,1,1),k*nch*2)
+      call prin2(' zrhs2 is *',zrhs(1,1,2),k*nch*2)
+      call zgmres_solver(2*n,xmat,zid,zrhs,numit,eps,niter,errs,rres,
+     1   zsoln)
+      call prin2(' zsoln1 is *',zsoln(1,1,1),k*nch*2)
+      call prin2(' zsoln2 is *',zsoln(1,1,2),k*nch*2)
       
 c
 c
@@ -197,14 +185,14 @@ c
           zz = 0
           call h2d_dlp(srcvals(1,j,ich),2,targ,0,dpars,1,zk0,0,
      1      ipars,zz)
-ccc          pot = pot + zsoln(j,ich,1)*zz*whts(j,ich)/zpars(3)
-             pot = pot + zrhs(j,ich,1)*zz*whts(j,ich)/zpars(3)
-             potd = potd + zrhs(j,ich,1)*zz*whts(j,ich)/zpars(3)
+          pot = pot + zsoln(j,ich,1)*zz*whts(j,ich)/zpars(3)
+ccc             pot = pot + zrhs(j,ich,1)*zz*whts(j,ich)/zpars(3)
+             potd = potd + zsoln(j,ich,1)*zz*whts(j,ich)/zpars(3)
           call h2d_slp(srcvals(1,j,ich),2,targ,0,dpars,1,zk0,0,
      1      ipars,zz)
-ccc          pot = pot - zsoln(j,ich,2)*zz*whts(j,ich)/zpars(3)
-          pot = pot - zrhs(j,ich,2)*zz*whts(j,ich)/zpars(3)
-          pots = pots - zrhs(j,ich,2)*zz*whts(j,ich)/zpars(3)
+          pot = pot - zsoln(j,ich,2)*zz*whts(j,ich)/zpars(3)
+ccc          pot = pot - zrhs(j,ich,2)*zz*whts(j,ich)/zpars(3)
+          pots = pots - zsoln(j,ich,2)*zz*whts(j,ich)/zpars(3)
 cc          call prin2('zz=*',zz,2)
         enddo
       enddo
@@ -249,47 +237,3 @@ c
         end
 c
 c
-c
-c***********************************************************************
-      subroutine ghelm(p1,zk,i1,xt,yt,xs,ys,gg)
-c***********************************************************************
-      implicit real *8 (a-h,o-z)
-      complex *16 gg,h0,h1,zk,z,eye,zs
-c
-c     compute Green's function for Helmholtz equation.
-c
-      eye = dcmplx(0.0d0,1.0d0)
-      zs = eye/4.0d0
-      rr2 = (xt-xs)**2 + (yt-ys)**2
-      rr = dsqrt(rr2)
-      z = zk*rr
-      ifexpon = 1
-      call hank103(z,h0,h1,ifexpon)
-      gg = zs*h0
-      return
-      end
-c
-
-c
-c***********************************************************************
-      subroutine ghelmgrad(xt,yt,xs,ys,p1,zk,i1,i2,gx,gy)
-c***********************************************************************
-      implicit real *8 (a-h,o-z)
-      complex *16 eye,gx,gy,h0,h1,zk,z,zs
-c
-c     compute gradient of Green's function for Helmholtz equation.
-c
-      eye = dcmplx(0.0d0,1.0d0)
-      zs = eye/4.0d0
-      rr2 = (xt-xs)**2 + (yt-ys)**2
-      rr = dsqrt(rr2)
-      z = zk*rr
-      ifexpon = 1
-      call hank103(z,h0,h1,ifexpon)
-      gx = -zs*zk*h1*(xt-xs)/rr
-      gy = -zs*zk*h1*(yt-ys)/rr
-      return
-      end
-c
-c
-
