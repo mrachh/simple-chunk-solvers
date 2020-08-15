@@ -7,7 +7,7 @@ c
 
       parameter (maxc = 10000)
  
-      complex *16 zk0,zk,eye
+      complex *16 zk0,zk1,eye
       complex *16, allocatable :: xmat(:,:)
       real *8 pars(1000)
       real *8, allocatable :: chunks(:,:,:),ders(:,:,:),ders2(:,:,:)
@@ -54,7 +54,7 @@ c
       tb = 1.0d0
       ier = 0
       ifclosed = 0
-      chsmall = 1.0d-7
+      chsmall = 1.0d-3
 
       xyin(1) = 0.3d0
       xyin(2) = 0.2d0
@@ -230,7 +230,7 @@ c
           pot = pot + zsoln(j,ich,1)*zz*whts(j,ich)/zpars(3)
           call h2d_slp(srcvals(1,j,ich),2,targ,0,dpars,1,zk0,0,
      1      ipars,zz)
-          pot = pot + zsoln(j,ich,2)*zz*whts(j,ich)/zpars(3)
+          pot = pot - zsoln(j,ich,2)*zz*whts(j,ich)/zpars(3)
 cc          call prin2('zz=*',zz,2)
         enddo
       enddo
