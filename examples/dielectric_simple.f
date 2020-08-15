@@ -7,7 +7,7 @@ c
 
       parameter (maxc = 10000)
  
-      complex *16 zk0,zk,eye
+      complex *16 zk0,zk1,eye
       complex *16, allocatable :: xmat(:,:)
       real *8 pars(1000)
       real *8, allocatable :: chunks(:,:,:),ders(:,:,:),ders2(:,:,:)
