@@ -190,7 +190,7 @@ c
       call zgetmat_bdry(k,nch,n,srcvals,srccoefs,h2d_transmission_dir,
      1  8,0,dpars,6,zsend,0,ipars,xmatij)
 c
-      call prin2(' xmatij = *',xmatij,2*n*n)
+ccc      call prin2(' xmatij = *',xmatij,2*n*n)
       do i = 1,n
       do j = 1,n
          xmat(i,j) = xmatij(i,j)
@@ -207,7 +207,7 @@ c
       call zgetmat_bdry(k,nch,n,srcvals,srccoefs,h2d_transmission_dir,
      1  8,0,dpars,6,zsend,0,ipars,xmatij)
 c
-      call prin2(' xmatij = *',xmatij,2*n*n)
+ccc      call prin2(' xmatij = *',xmatij,2*n*n)
       do i = 1,n
       do j = 1,n
          xmat(i,j+n) = xmatij(i,j)
@@ -224,7 +224,7 @@ c
       call zgetmat_bdry(k,nch,n,srcvals,srccoefs,h2d_transmission_neu,
      1  8,0,dpars,6,zsend,0,ipars,xmatij)
 c
-      call prin2(' xmatij = *',xmatij,2*n*n)
+ccc      call prin2(' xmatij = *',xmatij,2*n*n)
       do i = 1,n
       do j = 1,n
          xmat(i+n,j+n) = xmatij(i,j)
@@ -241,7 +241,7 @@ c
       call zgetmat_bdry(k,nch,n,srcvals,srccoefs,h2d_transmission_neu,
      1  8,0,dpars,6,zsend,0,ipars,xmatij)
 c
-      call prin2(' xmatij = *',xmatij,2*n*n)
+ccc      call prin2(' xmatij = *',xmatij,2*n*n)
       do i = 1,n
       do j = 1,n
          xmat(i+n,j) = xmatij(i,j)
