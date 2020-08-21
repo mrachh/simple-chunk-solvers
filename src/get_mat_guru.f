@@ -83,7 +83,18 @@ c
       real *8, allocatable :: tsquad(:),wquad(:)
       real *8, allocatable :: tstmp(:)
       real *8, allocatable :: work(:)
-      complex *16, allocatable :: xtmp(:,:),xtmp2(:)
+      complex *16, allocatable :: xtmp(:,:),xtmp2(:),xtmp3(:,:)
+      
+      real *8, allocatable :: cm(:,:),rads(:),radtmp(:)
+      real *8, allocatable :: srcover(:,:,:)
+      integer, allocatable :: row_ptr(:),col_ind(:),col_ptr(:)
+      integer, allocatable :: row_ind(:),iarr(:)
+      real *8 rfac
+      real *8, allocatable :: tsover(:),wover(:),uover(:,:),vover(:,:)
+      real *8, allocatable :: ximat(:,:)
+      complex *16, allocatable :: zximat(:,:)
+      complex *16 zalpha,zbeta
+      
 
 c
 c       temporary variables 
@@ -107,7 +118,7 @@ c
       allocate(xtmp(k,k),xtmp2(k))
       allocate(ainterp(k,k,k))
 
-      lwork = k*k*10+10
+      lwork = k*k*10+10*k + 100
       allocate(work(lwork))
       do i=1,k
         call lematrin(k,k,xs0(1,i),ainterp(1,1,i),tstmp,work)
@@ -116,10 +127,80 @@ c
       m = 20
       itype = 1
       allocate(tsquad(m),wquad(m))
-      call legeexps(itype,m,tsquad,utmp,vtmp,wquad) 
+      call legeexps(itype,m,tsquad,utmp,vtmp,wquad)
 
+c
+c  find all close interactions
+c
+      allocate(cm(2,nch),rads(nch),radtmp(nch))
+      
+      call get_cm_rad(k,nch,srcinfo,cm,rads)
+      rfac = 1.5d0
+      do i=1,nch
+        radtmp(i) = rads(i)*rfac
+      enddo
+
+cc      call prin2('cm=*',cm,24)
+cc      call prin2('rads=*',rads,24)
+cc      call prin2('radtmp=*',radtmp,24)
+cc      call prinf('n=*',n,1)
+cc      call prinf('nch=*',nch,1)
+
+      
+      call findnearmem(cm,nch,radtmp,8,srcinfo,n,nnz)
+      call prinf('nnz=*',nnz,1)
+
+      allocate(row_ptr(n+1),col_ptr(nch+1))
+      allocate(row_ind(nnz),col_ind(nnz),iarr(nnz))
+
+      call findnear(cm,nch,radtmp,8,srcinfo,n,row_ptr,col_ind)
+      
+      call rsc_to_csc(nch,n,nnz,row_ptr,col_ind,col_ptr,row_ind,
+     1   iarr)
+
+      kover = 20
+      allocate(tsover(kover),wover(kover),uover(kover,kover))
+      allocate(vover(kover,kover))
+
+      itype = 2
+      call legeexps(itype,kover,tsover,uover,vover,wover)
+
+      allocate(ximat(kover,k),zximat(kover,k))
+      call lematrin(k,kover,tsover,ximat,tstmp,work)
+      do i=1,k
+        do j=1,kover
+          zximat(j,i) = ximat(j,i)
+        enddo
+      enddo
+
+      call prin2('finished getting ximat*',i,0)
+
+      allocate(srcover(8,kover,nch))
+c
+c  oversample the geometry information
+c
+      alpha = 1.0d0
+      beta = 0.0d0
+      do ich=1,nch
+        call dgemm('n','t',8,kover,k,alpha,srcinfo(1,1,ich),
+     1   8,ximat,kover,beta,srcover(1,1,ich),8)
+      enddo
+
+      call prinf('finished oversamling*',i,0)
+
+      allocate(xtmp3(k,kover))
+c
+c  end of oversampling geometry
+c
+
+c
+c  generate matrix entries corresponding to smooth quadrature
+c  where self is corrected via ggq
+c 
+      zalpha = 1.0d0
+      zbeta = 0.0d0
 C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(isch,ismat,itch,itmat)
-C$OMP$PRIVATE(i,j,xtmp,xtmp2)
+C$OMP$PRIVATE(i,j,xtmp,xtmp2,xtmp3)
       do isch=1,nch
         ismat = (isch-1)*k + 1
         do itch=1,nch
@@ -130,23 +211,55 @@ C$OMP$PRIVATE(i,j,xtmp,xtmp2)
             enddo
           enddo
 
-
           if(isch.eq.itch) then
             call zself_buildmat(k,srccoefs(1,1,isch),
      1         srcinfo(1,1,itch),fker,ndt,ndd,dpars,ndz,zpars,
      2         ndi,ipars,xs0,whts0,ainterp,xtmp)
           else
-            do j=1,k
-              xtmp2 = 0
-              call zadapquad(k,srccoefs(1,1,isch),srcinfo(1,j,itch),
-     1          fker,8,ndd,dpars,ndz,zpars,ndi,ipars,umat,m,tsquad,
-     2          wquad,xtmp2)
+            do j=1,kover
+              dst = sqrt(srcover(3,j,isch)**2 + srcover(4,j,isch)**2)*
+     1           wover(j)
               do i=1,k
-                xtmp(j,i) = xtmp2(i)
+                call fker(srcover(1,j,isch),8,srcinfo(1,i,itch),
+     1            ndd,dpars,ndz,zpars,ndi,ipars,xtmp3(i,j))
+                xtmp3(i,j) = xtmp3(i,j)*dst
               enddo
             enddo
+            call zgemm('n','n',k,k,kover,zalpha,xtmp3,k,zximat,
+     1        kover,zbeta,xtmp,k)
           endif
           call zinsertmat(k,k,xtmp,itmat,ismat,n,n,xmat)
+        enddo
+      enddo
+C$OMP END PARALLEL DO     
+ 
+      call prinf('finished n2 work*',i,0)
+
+c
+c  now correct the near part of the matrices
+c
+C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(isch,istart,ii,itarg,itch)
+C$OMP$PRIVATE(j,xtmp2,i)
+      do isch=1,nch
+        istart = (isch-1)*k
+        nn = col_ptr(isch+1)-col_ptr(isch)
+cc        call prinf('rel targs=*',row_ind(col_ptr(isch)),nn)
+        do ii=col_ptr(isch),col_ptr(isch+1)-1
+c
+c  identify chunk number and node number of given target
+c
+          itarg = row_ind(ii)
+          itch = ceiling((itarg+0.0d0)/k)
+          if(isch.eq.itch) goto 1000
+          j = itarg - (itch-1)*k
+          xtmp2 = 0
+          call zadapquad(k,srccoefs(1,1,isch),srcinfo(1,j,itch),
+     1       fker,8,ndd,dpars,ndz,zpars,ndi,ipars,umat,m,tsquad,
+     2       wquad,xtmp2)
+          do i=1,k
+            xmat(itarg,istart+i) = xtmp2(i)
+          enddo
+ 1000     continue          
         enddo
       enddo
 C$OMP END PARALLEL DO      
@@ -232,11 +345,11 @@ c
       maxrec = 0
       numit = 0
       
-      maxdepth = 50
+      maxdepth = 200
       allocate(stack(2,maxdepth),vals(k,maxdepth))
 
       nnmax = 100000
-      eps = 1.0d-14
+      eps = 1.0d-12
       do j=1,maxdepth
         stack(1,j) = 0
         stack(2,j) = 0
