@@ -18,7 +18,10 @@
 
       complex *16, allocatable :: zrhs(:,:)
       complex *16, allocatable :: zsoln(:,:)
+      real *8, allocatable :: targs(:,:)
       real *8 errs(1000),targ(2),src_normal(2),targ_normal(2)
+      integer, allocatable :: isin(:)
+      complex *16, allocatable :: pottarg(:),pottargex(:)
       complex *16 zz,pot,potex,zpars(3),zid
 
       external fcurve,h2d_comb
@@ -138,6 +141,42 @@ cc          call prin2('zz=*',zz,2)
       call prin2('potex=*',potex,2)
       call prin2('abs error=*',abs(potex-pot),1)
       call prin2('rel error=*',abs(potex-pot)/abs(potex),1)
+
+      nlat = 50
+      ntarg = nlat*nlat
+
+      allocate(targs(2,ntarg),isin(ntarg),pottargex(ntarg),
+     1   pottarg(ntarg))
+
+      do ix=1,nlat
+        do iy=1,nlat
+          itt = (ix-1)*nlat + iy
+          targs(1,itt) = -3  +6*(ix-1.0d0)/(nlat-1.0d0)
+          targs(2,itt) = -3  +6*(iy-1.0d0)/(nlat-1.0d0)
+          isin(itt) = 1
+          rr = targs(1,itt)**2 + targs(2,itt)**2
+          thet = atan2(targs(2,itt),targs(1,itt))
+          rtest = (pars(1) + pars(2)*cos(3*thet))**2
+          if(rr.gt.rtest) isin(itt) = 0
+          call h2d_slp(xyin,2,targs(1,itt),0,dpars,1,zk,0,ipars,
+     1       pottargex(itt))
+        enddo
+      enddo
+
+      call helm2d_comb_dir_targ(k,nch,n,srccoefs,srcvals,zpars,zsoln,
+     1  ntarg,targs,pottarg)
+
+      erra = 0
+      ra = 0
+      do i=1,ntarg
+        if(isin(i).eq.0) then
+          ra = ra + abs(pottargex(i))**2
+          erra = erra + abs(pottargex(i)-pottarg(i))**2
+        endif
+      enddo
+
+      erra = sqrt(erra/ra)
+      call prin2('relative l2 error on grid of targets=*',erra,1)
  
       return
       end

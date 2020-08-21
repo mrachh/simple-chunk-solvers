@@ -33,6 +33,19 @@ OBJECTS =  ext_dir_solver.o \
   $(SRC)/gmres_solvers.o \
   $(SRC)/levrtree2d.o \
   $(SRC)/nearquadrouts.o \
+  $(SRC)/cdjseval2d.o \
+  $(SRC)/dfft.o \
+  $(SRC)/fmmcommon2d.o \
+  $(SRC)/get_fmm_thresh.o \
+  $(SRC)/h2dcommon.o \
+  $(SRC)/h2dterms.o \
+  $(SRC)/helm_comb_eval.o \
+  $(SRC)/helmrouts2d.o \
+  $(SRC)/helmrouts2d_dir.o \
+  $(SRC)/hfmm2dmain.o \
+  $(SRC)/hfmm2dpart.o \
+  $(SRC)/next235.o \
+  $(SRC)/wideband2d.o \
 
 
 #
