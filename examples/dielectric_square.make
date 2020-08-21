@@ -28,8 +28,11 @@ OBJECTS =  dielectric_square.o \
   $(SRC)/chunks.o \
   $(SRC)/helm_kernels.o \
   $(SRC)/get_mat_guru.o \
+  $(SRC)/get_mat_guru_nreg.o \
   $(SRC)/helm_mats.o \
   $(SRC)/gmres_solvers.o \
+  $(SRC)/levrtree2d.o \
+  $(SRC)/nearquadrouts.o \
 
 
 #

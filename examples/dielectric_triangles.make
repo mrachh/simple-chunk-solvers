@@ -32,6 +32,8 @@ OBJECTS =  dielectric_triangles.o \
   $(SRC)/get_mat_guru_nreg.o \
   $(SRC)/helm_mats.o \
   $(SRC)/gmres_solvers.o \
+  $(SRC)/levrtree2d.o \
+  $(SRC)/nearquadrouts.o \
 
 
 #
