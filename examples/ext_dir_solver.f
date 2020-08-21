@@ -142,7 +142,7 @@ cc          call prin2('zz=*',zz,2)
       call prin2('abs error=*',abs(potex-pot),1)
       call prin2('rel error=*',abs(potex-pot)/abs(potex),1)
 
-      nlat = 50
+      nlat = 300
       ntarg = nlat*nlat
 
       allocate(targs(2,ntarg),isin(ntarg),pottargex(ntarg),
@@ -170,8 +170,11 @@ cc          call prin2('zz=*',zz,2)
       ra = 0
       do i=1,ntarg
         if(isin(i).eq.0) then
+          err = abs(pottargex(i)-pottarg(i))
           ra = ra + abs(pottargex(i))**2
           erra = erra + abs(pottargex(i)-pottarg(i))**2
+
+          write(33,*) i,err,isin(i),targs(1,i),targs(2,i) 
         endif
       enddo
 

@@ -144,23 +144,24 @@ c
       thresh = thresh*abs(zpars(1))
       ndz = 3
       do i=1,nt
+        nn = row_ptr(i+1)-row_ptr(i)
         do ii = row_ptr(i),row_ptr(i+1)-1
           ich = col_ind(ii)
           xtmp2 = 0
           call zadapquad(k,srccoefs(1,1,ich),targs(1,i),
      1       h2d_comb,2,ndd,dpars,ndz,zpars,ndi,ipars,umat,m,tsquad,
      2       wquad,xtmp2)
-          
+          pottmp = 0
           do j=1,k
-            pot = pot + xtmp2(j)*sigma(j,ich)
+            pot(i) = pot(i) + xtmp2(j)*sigma(j,ich)
           enddo
 
           istart = (ich-1)*kover+1
           pottmp = 0
-          call h2d_directcdp_vec(nd,zpars(1),srcover(1,1,ich),kover,
+          call h2d_directcdp_vec(nd,zpars(1),sources(1,istart),kover,
      1      charges(istart),dipstr(istart),dipvec(1,istart),
      2      targs(1,i),pottmp,thresh)
-          pot = pot - pottmp
+          pot(i) = pot(i) - pottmp
         enddo
       enddo
      
