@@ -154,7 +154,7 @@ c
       implicit real *8 (a-h,o-z)
       integer ipars
       real *8 dpars,srcinfo(8),targinfo(2)
-      complex *16 zpars(6),u,h0,ima,zs,z,zk,h1,gx,gy,ztmp
+      complex *16 zpars(6),u,h0,ima,zs,z,zk,zk2,h1,gx,gy,ztmp
       data ima/(0.0d0,1.0d0)/
       data zs/(0.0d0,0.25d0)/
 
