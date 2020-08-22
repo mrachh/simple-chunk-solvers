@@ -31,8 +31,8 @@ c
       real *8, allocatable :: ytarg(:)
       real *8  verts(2,1000)
       integer iverts(2,100)
-      integer irbdry(10,3)
-      integer nsegs(4)
+      integer irbdry(10,4)
+      integer nsegs(10)
       integer irside(100)
       integer ilside(100)
       integer, allocatable :: idt(:)
@@ -67,6 +67,7 @@ c
       zks(1) = 1.4d0 + 0.0d0*eye
       zks(2) = 1.6d0 + 0.0d0*eye
       zks(3) = 1.7d0 + 0.0d0*eye
+      zks(4) = 1.6d0 + 0.0d0*eye
 
       eps = 1.0d-7
       ifclosed = 1
@@ -114,7 +115,7 @@ c     chunk up each side of domain
 c     routine fcurve1 defines a side based on 
 c     x in [pars(1),pars(2), y in [opars(3)mparrs(4)] 
 c  
-      open (unit=19,file='input.dat',status='unknown')
+      open (unit=19,file='input_eye.dat',status='unknown')
 c
       read(19,*) nverts
       do i = 1,nverts
@@ -145,7 +146,12 @@ c
       write(6,*) 'irbdry 1',(irbdry(ii,1),ii=1,nsegs(1))
       write(6,*) 'irbdry 2',(irbdry(ii,2),ii=1,nsegs(2))
       write(6,*) 'irbdry 3',(irbdry(ii,3),ii=1,nsegs(3))
+      write(6,*) 'irbdry 4',(irbdry(ii,4),ii=1,nsegs(4))
 c
+c
+      do i = 1,nverts
+         write(6,*) verts(1,i), verts(2,i)
+      enddo
 c
 c
       nch = 0
@@ -205,10 +211,12 @@ ccc      b2 = b1
       alphas(1) = a1
       alphas(2) = a2
       alphas(3) = a3
+      alphas(4) = a3
       betas(0) = b0
       betas(1) = b1
       betas(2) = b2
       betas(3) = b3
+      betas(4) = b3
 c
 c     testing just getdomains
 c
@@ -217,7 +225,6 @@ ccc      if (2.ne.3) goto 222
 c
 c  get the matrix
 c
-
 
       call cpu_time(t1)
 C$       t1 = omp_get_wtime()
@@ -319,6 +326,7 @@ ccc      zid = b2/2
       eps = 1.0d-15
 c
       call prin2(' zrhs is *',zrhs,2*n*2)
+ccc      stop
 c
       call cpu_time(t1)
 C$       t1 = omp_get_wtime()
