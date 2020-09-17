@@ -171,7 +171,7 @@ c
             rn = (dxdt**2 + dydt**2)**(1.5d0)
             kurv(i) = (dxdt*dydt2 - dydt*dxdt2)/rn
          enddo
-         call prin2(' kurv is *',kurv,npts2)
+ccc         call prin2(' kurv is *',kurv,npts2)
 c
          read(5,*) ilside(ii),irside(ii)
          read(5,*) irefinel(ii),irefiner(ii)
@@ -281,7 +281,7 @@ c     if treu scattering problem, angle of incidence of plane wave
 c     theta = 0  -> normal,   0 < theta < pi/2 is rightgoing
 c                         -pi/2 < theta < 0 is leftgoing
 c
-      thetain = 0.0d0
+ccc      thetain = 0.0d0
 c
 c     testing just getdomains
 c
@@ -312,10 +312,10 @@ C$      t2 = omp_get_wtime()
         bl = betas(iregionl(ich))
         br = betas(iregionr(ich))
         zq = 0.5*(ar/br+al/bl)
-        write(6,*) 'ich,zkl,zkr',ich,zkl,zkr
-        write(13,*) 'ich,zkl,zkr',ich,zkl,zkr
-        write(6,*) 'irr,irl',iregionr(ich),iregionl(ich)
-        write(13,*) 'irr,irl',iregionr(ich),iregionl(ich)
+ccc        write(6,*) 'ich,zkl,zkr',ich,zkl,zkr
+ccc        write(13,*) 'ich,zkl,zkr',ich,zkl,zkr
+ccc        write(6,*) 'irr,irl',iregionr(ich),iregionl(ich)
+ccc        write(13,*) 'irr,irl',iregionr(ich),iregionl(ich)
 ccc        call prinf('ich is *',ich,1)
 ccc        call prin2('zkl is *',zkl,2)
 ccc        call prin2('zkr is *',zkr,2)
@@ -323,7 +323,7 @@ ccc        call prin2('al is *',al,2)
 ccc        call prin2('ar is *',ar,2)
 ccc        call prin2('bl is *',bl,2)
 ccc        call prin2('br is *',br,2)
-        call prin2('zq is *',zq,2)
+ccc        call prin2('zq is *',zq,2)
         do j=1,k
            if (iregionr(ich).eq.0) then
               xsr(1) = xyin1(1)
@@ -370,8 +370,8 @@ ccc              call prin2('rhs =*',zrhs(j,ich,1),2)
       enddo
 c
       do ich=1,nch
-        call prinf(' iregionr = *',iregionr(ich),1)
-        call prinf(' iregionl = *',iregionl(ich),1)
+ccc        call prinf(' iregionr = *',iregionr(ich),1)
+ccc        call prinf(' iregionl = *',iregionl(ich),1)
         zkl = zks(iregionl(ich))
         zkr = zks(iregionr(ich))
         al = alphas(iregionl(ich))
@@ -423,7 +423,7 @@ ccc      zid = b2/2
 
       eps = 1.0d-9
 c
-      call prin2(' zrhs is *',zrhs,2*n*2)
+ccc      call prin2(' zrhs is *',zrhs,2*n*2)
 ccc      stop
 c
       call cpu_time(t1)
@@ -437,7 +437,7 @@ C$      t2 = omp_get_wtime()
       
       call prin2('matrix solve time=*',t2-t1,1)
 
-      call prin2(' sol is *',zsoln,2*n*2)
+ccc      call prin2(' sol is *',zsoln,2*n*2)
       do ich = 1,nch
          do j = 1,k
             write(33,*) abs(zsoln(j,ich,1) - zrhs(j,ich,1))
@@ -564,13 +564,38 @@ ccc         write(6,*) 'in main parsall',(parsall(i,iseg),i=1,4)
 ccc         write(13,*) 'in main parsall',(parsall(i,iseg),i=1,4)
 ccc      enddo
 c
-      call domainflag(nsmax,nreg,nseg,nsegs,parsall,irbdry,xtarg,ytarg,
-     1     nnx,nny,idt)
+ccc      call domainflag(nsmax,nreg,nseg,nsegs,parsall,irbdry,xtarg,ytarg,
+ccc     1     nnx,nny,idt)
+      nnn = nch*k
+      ntarget = nnx*nny
+      call prinf(' calling domainflagsm nch is *',nch,1)
+      t0 = second()
+      call domainflagsm(k,nch,nnn,srccoefs,srcvals,
+     1      iregionl,iregionr,nreg,ntarget,xtarg,ytarg,idt) 
+      t1 = second()
+      call prin2(' time for domainflag is *',t1-t0,1)
+ccc      do i = 1,ntarget
+ccc         idt(i) = 0
+ccc         rr = dsqrt(xtarg(i)**2 + ytarg(i)**2)
+ccc         if (rr .lt.2) idt(i) = 1
+ccc         if ((rr .lt.2) .and. (ytarg(i).lt.0.0d0)) idt(i) = 2
+ccc      enddo
+      open(unit = 20,file = 'energy.m',status='unknown');
+      write(20,*) 'edens = ['
+      do i = 1,ntarget
+         write(20,*) xtarg(i), ytarg(i), idt(i)
+      enddo
+      write(20,*) '];'
+      write(20,*) 'X = reshape(edens(:,1),',nnx,',',nny,')'
+      write(20,*) 'Y = reshape(edens(:,2),',nnx,',',nny,')'
+      write(20,*) 'Z = reshape(edens(:,3),',nnx,',',nny,')'
+      write(20,*) 'mesh(X,Y,Z)'
 ccc      call prinf( 'idt is *',idt,4)
 c
-      ntarget = nnx*nny
 ccc      call prinf(' ntarget = *',ntarget,1)
 ccc      call prinf(' nreg = *',nreg,1)
+      call prinf(' calling evalpot = *',n,1)
+      t1 = second()
       call evalpotvol(k,nch,n,srccoefs,srcvals,zks,alphas,betas,
      1  zsoln(1,1,2),zsoln(1,1,1),nreg,idt,ntarget,xtarg,ytarg,upotall,
      2  ifin,uinfun,thetain)
@@ -602,15 +627,15 @@ c
 c 
       open(unit = 19,file = 'pot.m',status='unknown');
       open(unit = 27,file = 'potex.m',status='unknown');
-      open(unit = 20,file = 'energy.m',status='unknown');
+ccc      open(unit = 20,file = 'energy.m',status='unknown');
       write(19,*) 'rpot = ['
-      write(20,*) 'edens = ['
+ccc      write(20,*) 'edens = ['
       write(27,*) 'epot = ['
       do i = 1,ntarget
          write(19,*) xtarg(i), ytarg(i), dreal(upotall(i))
          write(27,*) xtarg(i), ytarg(i), dreal(potexall(i))
 ccc         write(20,*) xtarg(i), ytarg(i), cdabs(upotall(i))**2
-         write(20,*) xtarg(i), ytarg(i), idt(i)
+ccc         write(20,*) xtarg(i), ytarg(i), idt(i)
       enddo
       t2 = second()
       call prin2(' time to eval at targs *',t2-t1,1)
@@ -619,11 +644,11 @@ ccc         write(20,*) xtarg(i), ytarg(i), cdabs(upotall(i))**2
       write(19,*) 'Y = reshape(rpot(:,2),',nnx,',',nny,')'
       write(19,*) 'Z = reshape(rpot(:,3),',nnx,',',nny,')'
       write(19,*) 'mesh(X,Y,Z)'
-      write(20,*) '];'
-      write(20,*) 'X = reshape(edens(:,1),',nnx,',',nny,')'
-      write(20,*) 'Y = reshape(edens(:,2),',nnx,',',nny,')'
-      write(20,*) 'Z = reshape(edens(:,3),',nnx,',',nny,')'
-      write(20,*) 'mesh(X,Y,Z)'
+ccc      write(20,*) '];'
+ccc      write(20,*) 'X = reshape(edens(:,1),',nnx,',',nny,')'
+ccc      write(20,*) 'Y = reshape(edens(:,2),',nnx,',',nny,')'
+ccc      write(20,*) 'Z = reshape(edens(:,3),',nnx,',',nny,')'
+ccc      write(20,*) 'mesh(X,Y,Z)'
       write(27,*) '];'
       write(27,*) 'X = reshape(epot(:,1),',nnx,',',nny,')'
       write(27,*) 'Y = reshape(epot(:,2),',nnx,',',nny,')'
