@@ -85,8 +85,10 @@ c
          call prinf(' ntarget *',ntarget,1)
          call prinf(' n *',n,1)
          call prin2(' targ2 *',targ2,2*ntarget)
-         call helm2d_dielec_targ(k,nch,n,srccoefs,srcinfo,
-     1      zpars,sigma,mu,ntarget,targ2,pot) 
+ccc         call helm2d_dielec_targ(k,nch,n,srccoefs,srcinfo,
+ccc     1      zpars,sigma,mu,ntarget,targ2,pot) 
+         call lap2d_dlp_targ(k,nch,n,srccoefs,srcinfo,
+     1      mu,ntarget,targ2,pot) 
 ccc         call prinf(' nts = *',nts,1)
          call prin2(' pot = *',pot,2*ntarget)
          do i = 1,ntarget
