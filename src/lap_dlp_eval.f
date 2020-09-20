@@ -50,14 +50,14 @@ c
       itype = 2
       allocate(ts0(k),w0(k),umat(k,k),vmat(k,k))
       call legeexps(itype,k,ts0,umat,vmat,w0)
-
+c
       allocate(xtmp2(k))
-
+c
       m = 20
       itype = 1
       allocate(tsquad(m),wquad(m))
       call legeexps(itype,m,tsquad,utmp,vtmp,wquad)
-
+c
       allocate(tstmp(k+10))
       lwork = k*k*10+10*k + 100
       allocate(work(lwork))
@@ -65,30 +65,28 @@ c
 c  find all close interactions
 c
       allocate(cm(2,nch),rads(nch),radtmp(nch))
-      
+c 
       call get_cm_rad(k,nch,srcinfo,cm,rads)
       rfac = 1.5d0
       do i=1,nch
         radtmp(i) = rads(i)*rfac
       enddo
-
-
-      
+c      
       call findnearmem(cm,nch,radtmp,2,targs,nt,nnz)
       call prinf('nnz=*',nnz,1)
-
+c
       allocate(row_ptr(nt+1))
       allocate(col_ind(nnz))
-
+c
       call findnear(cm,nch,radtmp,2,targs,nt,row_ptr,col_ind)
-      
+c      
       kover = 20
       allocate(tsover(kover),wover(kover),uover(kover,kover))
       allocate(vover(kover,kover))
-
+c
       itype = 2
       call legeexps(itype,kover,tsover,uover,vover,wover)
-
+c
       allocate(ximat(kover,k),zximat(kover,k))
       call lematrin(k,kover,tsover,ximat,tstmp,work)
       do i=1,k
@@ -96,9 +94,7 @@ c
           zximat(j,i) = ximat(j,i)
         enddo
       enddo
-
-      call prin2('finished getting ximat*',i,0)
-
+c
       allocate(srcover(8,kover,nch))
       allocate(muover(kover,nch))
 c
@@ -106,25 +102,24 @@ c  oversample the geometry information
 c
       alpha = 1.0d0
       beta = 0.0d0
-
+c
       do ich=1,nch
         call dgemm('n','t',8,kover,k,alpha,srcinfo(1,1,ich),
      1   8,ximat,kover,beta,srcover(1,1,ich),8)
         call dgemm('n','t',2,kover,k,alpha,mu(1,ich),
      1   2,ximat,kover,beta,muover(1,ich),2)
       enddo
-
-      call prinf('finished oversamling*',i,0)
+ccc      call prinf('finished oversamling*',i,0)
 c
 c   call the fmm to compute all interactions
 c
       ifcharge = 0
       ifdipole = 1
-      
+c      
       nover = kover*nch
       allocate(dipstr(nover),dipvec(2,nover))
       allocate(sources(2,nover))
-
+c
       do ich=1,nch
         do j=1,kover
           ipt = (ich-1)*kover + j
@@ -137,27 +132,26 @@ c
      1                 dcmplx(dipvec(1,ipt),dipvec(2,ipt))
         enddo
       enddo
-
-
+c
       ifpgh = 0
       ifpghtarg = 1
-
+c
 C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(i)
       do i=1,nt
         pot(i) = 0
       enddo
 C$OMP END PARALLEL DO      
-      
+c      
       eps = 1.0d-13
       nd = 1
-      call prin2('before lfmm2dpart sources *',sources,2*nover)
+ccc      call prin2('before lfmm2dpart sources *',sources,2*nover)
       call lfmm2dpart(nd,eps,nover,sources,ifcharge,charges,
      1 ifdipole,dipstr,ifpgh,tmp,tmp,tmp,nt,targs,ifpghtarg,
      2 pot,tmp,tmp)
       do j=1,nt
          pot(j) = pot(j)/(2*pi)
        enddo
-      call prin2(' after fmm2dpart pot = *',pot,2*nt)
+ccc      call prin2(' after fmm2dpart pot = *',pot,2*nt)
 c
 c  now fix near corrections
 c

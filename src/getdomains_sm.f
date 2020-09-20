@@ -43,8 +43,8 @@ c
       allocate(mu(k,nch))
 c
 ccc      call prinf(' idt *',idt,ntarget)
-      call prinf(' nreg *',nreg,1)
-      call prinf(' nch *',nch,1)
+ccc      call prinf(' nreg *',nreg,1)
+ccc      call prinf(' nch *',nch,1)
       do i = 1,ntarget
          targ2(1,i) = xtarg(i)
          targ2(2,i) = ytarg(i)
@@ -58,7 +58,7 @@ c
       enddo
 ccc      goto 333
       do ii = 1,nreg
-         write(6,*) ' component', ii
+ccc         write(6,*) ' component', ii
          do ich=1,nch
            if (iregionl(ich).eq.ii) then
               do j=1,k
@@ -74,23 +74,25 @@ ccc      goto 333
               enddo
            endif
          enddo
-         call prin2(' mu is *',mu,2*k*nch)
+ccc         call prin2(' mu is *',mu,2*k*nch)
 c
          zpars(1) = 1.0d-6
          zpars(2) = 0.0d0
          zpars(3) = 1.0d0
-
-         call prinf(' nch *',nch,1)
-         call prinf(' k *',k,1)
-         call prinf(' ntarget *',ntarget,1)
-         call prinf(' n *',n,1)
-         call prin2(' targ2 *',targ2,2*ntarget)
+ccc         call prinf(' nch *',nch,1)
+ccc         call prinf(' k *',k,1)
+ccc         call prinf(' ntarget *',ntarget,1)
+ccc         call prinf(' n *',n,1)
+ccc         call prin2(' targ2 *',targ2,2*ntarget)
 ccc         call helm2d_dielec_targ(k,nch,n,srccoefs,srcinfo,
 ccc     1      zpars,sigma,mu,ntarget,targ2,pot) 
+ccc         t1 = second()
          call lap2d_dlp_targ(k,nch,n,srccoefs,srcinfo,
      1      mu,ntarget,targ2,pot) 
+ccc         t2 = second()
+ccc         call prin2(' time for lap2d targ = *',t2-t1,1)
 ccc         call prinf(' nts = *',nts,1)
-         call prin2(' pot = *',pot,2*ntarget)
+ccc         call prin2(' pot = *',pot,2*ntarget)
          do i = 1,ntarget
             idt(i) = idt(i) + nint(abs(pot(i)))*ii
          enddo
