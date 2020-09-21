@@ -108,15 +108,18 @@ c
             parsall(2*j+3,ii) = ycoeffs(j)
          enddo
 c
-         npts2 = 2*npts
-         hh = (sval(npts)-sval(1))/(npts2-1)
-         do i = 1,npts2
-            sv = hh*(i-1)
-            call fcurve1(sv,parsall(1,ii),xx,yy,dxdt,dydt,
-     1        dxdt2,dydt2)
-            rn = (dxdt**2 + dydt**2)**(1.5d0)
-            kurv(i) = (dxdt*dydt2 - dydt*dxdt2)/rn
-         enddo
+         ikurv = 0
+         if (ikurv.eq.1) then
+            npts2 = 2*npts
+            hh = (sval(npts)-sval(1))/(npts2-1)
+            do i = 1,npts2
+               sv = hh*(i-1)
+               call fcurve1(sv,parsall(1,ii),xx,yy,dxdt,dydt,
+     1           dxdt2,dydt2)
+               rn = (dxdt**2 + dydt**2)**(1.5d0)
+               kurv(i) = (dxdt*dydt2 - dydt*dxdt2)/rn
+            enddo
+         endif
 ccc         call prin2(' kurv is *',kurv,npts2)
 c
          read(5,*) ilside(ii),irside(ii)
