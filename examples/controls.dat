@@ -1,0 +1,19 @@
+0       ifin (0 -> output scattered field, 1 -> total field
+0       iscat (0 -> artificial data for accuracy test, 1 true scattering)
+0.3d0   xyin1(1)    (point in region 1)
+0.2d0   xyin1(2)
+6.3d0   xyout(1)    (point in exterior region 0)
+6.2d0   xyout(2)
+1.0d-3  eps_discrete  (for geometry resolution)
+16      k (poly order)
+20      npoints oper wavelength in vacuum
+5.0d-3  chsmall
+1       ifpr_geom
+200     numit (max number of GMRES iterations)
+1.0d-9  eps  (GMRES tolerance)
+-10.02  xlow
+-15.02  ylow
+0.1d0   hhx
+0.15d0  hhy
+200     nnx
+200     nny

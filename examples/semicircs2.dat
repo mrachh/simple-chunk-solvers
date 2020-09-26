@@ -77,18 +77,6 @@
   -2.0000000000000000        0.0000000000000000     
            2           1    (region on left/right)
            0           0    (refine initial or final endpoint)
-           5                (number of segments on 1st region boundary)
-           1                seg 1
-           2                seg 2
-           3                seg 3
-           4                seg 4
-          -9                seg 5  
-           5                (number of segments on 2nd region boundary)
-           5                seg 1
-           6                seg 2
-           7                seg 3
-           8                seg 4
-           9                seg 5
    1.0d1  0.0d0             Helmholtz frequency in vacuum region
    1.3d0  0.0d0             index of refraction in region 1
    1.5d0  0.0d0             index of refraction in region 2
