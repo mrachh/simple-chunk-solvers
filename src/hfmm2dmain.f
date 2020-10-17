@@ -634,7 +634,8 @@ C$OMP END PARALLEL DO
          endif
 
          if(boxlam.gt.8.0d0) then
-           print *, "Doing mpmp using hf"
+ccc           print *, "Doing mpmp using hf"
+ccc           print *, "ilev is ",ilev
            do ibox = laddr(1,ilev),laddr(2,ilev)
               nchild = itree(ipointer(3)+ibox-1)
               do i=1,nchild

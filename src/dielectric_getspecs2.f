@@ -89,6 +89,7 @@ c      seg #s  (pos oriented)
 c
 ccc      open (unit=5,file='semicircs.dat',status='unknown')
 c
+      pi = 4.0d0*datan(1.0d0)
       read(5,*) nreg
       read(5,*) nseg
       write(6,*) 'nreg is ',nreg
@@ -136,8 +137,8 @@ ccc            read(5,*) irbdry(ii,ireg)
 ccc         enddo
 ccc         write(6,*) 'irbdry is ',(irbdry(ii,ireg),ii=1,nsegs(ireg))
 ccc      enddo
-      read(5,*) xxx,yyy
-      zks(0) = xxx+ eye*yyy
+      read(5,*) rlambda
+      zks(0) = 2.0d0*pi/rlambda
       write(6,*) ' zk0 is ',zks(0)
       do ireg = 1,nreg
          read(5,*) rn1,rn2
