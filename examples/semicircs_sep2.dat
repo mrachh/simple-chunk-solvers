@@ -1,5 +1,5 @@
            2                 (number of regions)
-           9                 (number of segments)
+           10                 (number of segments)
            6                 (pts on first segment)
    2.0000000000000000        0.0000000000000000     
    1.9753766811902755       0.31286893008046174     
@@ -37,7 +37,7 @@
            1           0    (region on left/right)
            0           1    (refine initial or final endpoint)
            6                 (pts on fifth segment)
-  -2.0000000000000000        2.4492935982947064E-016
+  -2.0000000000000000      -0.000001
   -1.9753766811902755      -0.31286893008046152     
   -1.9021130325903073      -0.61803398874989457     
   -1.7820130483767358      -0.90798099947909339     
@@ -69,16 +69,21 @@
    1.7820130483767356      -0.90798099947909394     
    1.9021130325903071      -0.61803398874989524     
    1.9753766811902753      -0.31286893008046224     
-   2.0000000000000000       -4.8985871965894128E-016
+   2.0000000000000000      -0.000001
            2           0    (region on left/right)
            0           1    (refine initial or final endpoint)
            2                 (pts on ninth segment)
    2.0000000000000000        0.0000000000000000     
   -2.0000000000000000        0.0000000000000000     
-           2           1    (region on left/right)
+           0           1    (region on left/right)
            1           1    (refine initial or final endpoint)
-0.5                      wavelength in vacuum region
-1.3    0.0d0             relative index of refraction in region 1
-1.5    0.0d0             relative index of refraction in region 2
-0.0d0                    thetain - angle of incidence
+           2                 (pts on ninth segment)
+   2.0000000000000000        -0.000001
+  -2.0000000000000000        -0.000001
+           2           0    (region on left/right)
+           1           1    (refine initial or final endpoint)
+   0.5d0  0.0d0             wavelength in vacuum region
+   1.3d0  0.0d0             relative index of refraction in region 1
+   1.5d0  0.0d0             relative index of refraction in region 2
+   0.0d0                    thetain - angle of incidence
    1                        ipol paremeter( 0 = TE, 1 = TM)
