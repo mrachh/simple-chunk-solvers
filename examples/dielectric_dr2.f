@@ -37,9 +37,9 @@ c
       implicit real *8 (a-h,o-z)
 
       parameter (maxc = 10000)
-      parameter (maxseg = 10)
-      parameter (maxreg = 4)
-      parameter (maxp = 10)
+      parameter (maxseg = 30)
+      parameter (maxreg = 6)
+      parameter (maxp = 20)
  
       complex *16 zks(0:10),alphas(0:10),betas(0:10),eye
       complex *16 rns(0:10)
@@ -79,7 +79,7 @@ c
       external fcurve1,h2d_comb
       data eye/(0.0d0,1.0d0)/
 
-      call prini(0,0)
+      call prini(6,13)
 
       done = 1
       pi = 4*atan(done)
@@ -112,6 +112,20 @@ c
      1               irefinel,irefiner,parsall,xsall,ysall,
 ccc     1               maxp,maxseg,maxreg,irbdry,nsegs,thetain,ipol)
      1               maxp,maxseg,maxreg,thetain,ipol)
+c
+c    plot original points 
+c
+ccc      write(44,*) ' xsall = zeros(6,11)'
+ccc      write(45,*) ' ysall = zeros(6,11)'
+ccc      do ii = 1,nseg
+ccc         npts = nint(parsall(1,ii))
+ccc         write(6,*) 'ii = ',ii
+ccc         write(6,*) 'npts = ',npts
+ccc         do j = 1,npts
+ccc            write(44,*) ' xs(',j,',',ii,') =', xsall(j,ii)
+ccc            write(45,*) ' ys(',j,',',ii,') =', ysall(j,ii)
+ccc         enddo        
+ccc      enddo        
 c
       nover = 1
       allocate(chunks(2,k,maxc),ders(2,k,maxc),ders2(2,k,maxc))
