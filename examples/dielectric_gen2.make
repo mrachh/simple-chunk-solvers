@@ -1,5 +1,5 @@
 
-EXEC = int3
+EXEC = dielectric_solver
 
 FC = gfortran
 FFLAGS = -O2 -c -w -std=legacy 
@@ -28,7 +28,7 @@ OBJECTS =  dielectric_dr2.o \
   $(SRC)/legeexps.o \
   $(SRC)/pplot2.o \
   $(SRC)/hkrand.o \
-  $(SRC)/evalpotvol_chunk.o \
+  $(SRC)/evalpotvol_chunk2.o \
   $(SRC)/getdomains_sm2.o \
   $(SRC)/hank103.o \
   $(SRC)/dlaran.o \

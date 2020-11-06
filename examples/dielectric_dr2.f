@@ -63,6 +63,7 @@ ccc      integer nsegs(maxseg)
       integer, allocatable :: iregionl(:)
       integer, allocatable :: iregionr(:)
       real *8, allocatable :: srccoefs(:,:,:),srcvals(:,:,:)
+      real *8, allocatable :: edens(:),etotal(:)
 c
       real *8 xyin1(2),xyin2(2),xyout(2),xsr(2),xsl(2)
 
@@ -299,6 +300,8 @@ c
       allocate(ytarg(nnx*nny))
       allocate(idt(nnx*nny))
       allocate(upotall(nnx*nny))
+      allocate(edens(nnx*nny))
+      allocate(etotal(nreg))
       allocate(potexall(nnx*nny))
 c
       next = 0
@@ -309,7 +312,7 @@ c
          ytarg(next) = ylow + j*hhy
       enddo
       enddo
-
+      voxel = hhx*hhy
       nnn = nch*k
       ntarget = nnx*nny
       call prinf(' calling domainflagsm nch is *',nch,1)
@@ -330,9 +333,13 @@ c
       write(61,*) 'mesh(X,Y,Z)'
       call prinf(' calling evalpot = *',n,1)
       t1 = second()
-      call evalpotvol(k,nch,n,srccoefs,srcvals,zks,alphas,betas,
+ccc      call evalpotvol(k,nch,n,srccoefs,srcvals,zks,alphas,betas,
+ccc     1  zsoln(1,1,2),zsoln(1,1,1),nreg,idt,ntarget,xtarg,ytarg,upotall,
+ccc     2  ifin,uinfun,thetain)
+      call evalpotvol2(k,nch,n,srccoefs,srcvals,zks,alphas,betas,
      1  zsoln(1,1,2),zsoln(1,1,1),nreg,idt,ntarget,xtarg,ytarg,upotall,
-     2  ifin,uinfun,thetain)
+     2  edens,etotal,voxel,ifin,uinfun,thetain)
+ccc     2  ifin,uinfun,thetain)
 c
       do i=1,ntarget
          ireg = idt(i)
@@ -363,7 +370,9 @@ c
       if (iscat.eq.0) write(27,*) 'epot = ['
       do i = 1,ntarget
          write(19,*) xtarg(i), ytarg(i), dreal(upotall(i))
-         write(20,*) xtarg(i), ytarg(i), dreal(upotall(i))**2
+         write(20,*) xtarg(i), ytarg(i), 
+     1               edens(i)
+ccc     1               cdabs(upotall(i))**2
          if (iscat.eq.0) 
      1              write(27,*) xtarg(i), ytarg(i), dreal(potexall(i))
       enddo
@@ -386,6 +395,7 @@ c
          write(27,*) 'Z = reshape(epot(:,3),',nnx,',',nny,');'
          write(27,*) 'mesh(X,Y,Z)'
       endif
+      write(6,*)' integrated energy in regions ',(etotal(i),i=1,nreg)
 c
       return
       end
