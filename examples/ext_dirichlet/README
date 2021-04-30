@@ -1,0 +1,39 @@
+If you run:
+
+make -f ext_dir_daria.make
+
+you will generate an executable file called "dirichletsolver".
+
+It reads two kinds of data files:
+
+-------------------------------------------------------------------
+daria_geo.dat: 
+
+The input lines are documented in the sample - lines shoudl specify:
+1. iscat  0 lets you test for a known exact solution
+          1 means true scattering problem
+2. itot   1 means compute total field 
+          0 means just scattered field
+3. depth of slab
+4. NMODE = number of fourier modes
+5. Helmholtz coefficient
+6. coefficient of sin( pi x)
+7. coefficient of sin( pi 2 x)
+...
+   coefficient of sin( pi NMODE x)
+incoming angle (not currently used - the code assumes normal incidence)
+
+-------------------------------------------------------------------
+targ.dat: (number of targets and their coordinates)
+
+1. NTARG = number of targets
+x1 y1
+x2 y2
+...
+x_NTARG y_NTARG
+-------------------------------------------------------------------
+
+After execution, a new file is created called pot.m which contains the
+complex-valued potential at the target points.
+Another file is created called "bdrypts.m" which plots the geometry
+for inspection. 
