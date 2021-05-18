@@ -45,7 +45,7 @@ c     ...
 c     nsegs region (last_ 
 c      seg #s  (pos oriented)
 c
-ccc      open (unit=5,file='semicircs.dat',status='unknown')
+      open (unit=5,file='daria_geo.dat',status='unknown')
 c
       pi = 4*datan(1.0d0)
       read(5,*) iscat
@@ -73,7 +73,6 @@ c
       parsall(1,4) = pi
       parsall(2,4) = 0.0d0
       parsall(3,4) = norder
-      write(6,*) 'norder is ',norder
       do i = 1,norder
          read(5,*) parsall(3+i,4) 
       enddo

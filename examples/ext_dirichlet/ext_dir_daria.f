@@ -239,7 +239,6 @@ c
         dxdt2= 0.0d0
 c
         norder = nint(pars(3))
-        write(6,*) 'norder =',norder
 ccc        y = x*(pi-x)
 ccc        dydt=-2*x + pi
 ccc        dydt2=-2.0d0

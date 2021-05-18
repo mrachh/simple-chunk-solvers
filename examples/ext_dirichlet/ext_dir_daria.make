@@ -1,4 +1,4 @@
-EXEC = dirichletsolver
+EXEC = int2
 
 FC = gfortran
 FFLAGS = -O2 -c -w -std=legacy 
