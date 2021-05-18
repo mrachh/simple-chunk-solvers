@@ -205,7 +205,6 @@
       do i=1,k
         ttest(i) = -1.0d0 + 2.0d0*(i-1.0d0)/(k-1.0d0)
       enddo
-      call prin2('ttest=*',ttest,k)
 
   
       
@@ -239,7 +238,6 @@
       call chunklength2(kuse,funcurve,ndd,dpars,ndz,zpars,ndi,ipars, &
          ta,tb,xs2,ws2,rlcurve)
       rlcurve0 = rlcurve
-      call prin2('rlcurve=*',rlcurve,1)
       allocate(curv(kuse))
       call chunkcurv(kuse,funcurve,ndd,dpars,ndz,zpars,ndi,ipars,&
         ta,tb,xs2,ws2,curv)
@@ -435,7 +433,7 @@
 !       factor of more than 2, split them as well. iterate until done.
 !
 
-      maxiter=2
+      maxiter=100
       do ijk=1,maxiter
 !
         nchold=nch
@@ -606,25 +604,21 @@
 !       check the dyadic refinement at the
 !       ends, first find the end segments
 !
+      ileft = 1
       do i =1,nch
         if (abs(ab(1,i)-ta) .lt. 1.0d-15) ileft=i
-        if (abs(ab(2,i)-tb) .lt. 1.0d-15) iright=i
       enddo
 !
       a1=ab(1,ileft)
       b1=ab(2,ileft)
-      a2=ab(1,iright)
-      b2=ab(2,iright)
 !
       call chunklength2(kuse,funcurve,ndd,dpars,ndz,zpars,ndi,ipars, &
         a1,b1,xs2,ws2,rlleft)
-      call chunklength2(kuse,funcurve,ndd,dpars,ndz,zpars,ndi,ipars, &
-        a2,b2,xs2,ws2,rlright)
 !
 !       . . . dyadically split the left segment
 !
       if (irefinel.eq.1) then
-        do ijk=1,52
+        do ijk=1,200
 
 !
           if (rlleft .le. rlmaxe) goto 7100
@@ -659,11 +653,20 @@
         enddo
       endif
  7100 continue
+
+      iright = 1
+      do i=1,nch
+        if (abs(ab(2,i)-tb) .lt. 1.0d-15) iright=i
+      enddo
+      a2=ab(1,iright)
+      b2=ab(2,iright)
+      call chunklength2(kuse,funcurve,ndd,dpars,ndz,zpars,ndi,ipars, &
+        a2,b2,xs2,ws2,rlright)
 !
 !       . . . dyadically split the right segment
 !
       if(irefiner.eq.1) then
-        do ijk=1,52
+        do ijk=1,200
 !
 !
           if (rlright .le. rlmaxe) goto 7500
@@ -708,6 +711,7 @@
           if(adjs(1,i).lt.0) ich = i
         enddo
       endif
+      
       
 
 !

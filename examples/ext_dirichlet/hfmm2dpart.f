@@ -1269,7 +1269,7 @@ c
       mhung = 0
       ltree = 0
 
-      ifprint = 1
+      ifprint = 0
 
       allocate(radsrc(ns))
 

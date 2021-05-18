@@ -383,7 +383,7 @@ c     Suppressed if ifprint=0.
 c     Prints timing breakdown and other things if ifprint=1.
 c     Prints timing breakdown, list information, and other things if ifprint=2.
 c      
-        ifprint=1
+        ifprint=0
 
         pi = 4*atan(1.0d0)
 c

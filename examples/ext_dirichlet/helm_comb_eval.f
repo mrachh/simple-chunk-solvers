@@ -56,7 +56,6 @@ c
 
       
       call findnearmem(cm,nch,radtmp,2,targs,nt,nnz)
-      call prinf('nnz=*',nnz,1)
 
       allocate(row_ptr(nt+1))
       allocate(col_ind(nnz))
@@ -78,7 +77,6 @@ c
         enddo
       enddo
 
-      call prin2('finished getting ximat*',i,0)
 
       allocate(srcover(8,kover,nch),sigmaover(kover,nch))
 c
@@ -94,7 +92,6 @@ c
      1   2,ximat,kover,beta,sigmaover(1,ich),2)
       enddo
 
-      call prinf('finished oversamling*',i,0)
 c
 c   call the fmm to compute all interactions
 c

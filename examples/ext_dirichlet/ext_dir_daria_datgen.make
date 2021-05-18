@@ -1,23 +1,20 @@
 EXEC = dirichletsolver
 
 FC = gfortran
-FFLAGS = -O2 -c -w -std=legacy 
+FFLAGS = -O2 -w -std=legacy -fPIC 
 FLINK = gfortran -w -o $(EXEC) 
 FEND = -L/usr/local/opt/openblas/lib -lopenblas 
 #FEND = -lopenblas
 
-ifeq ($(OMP),ON)
-FFLAGS = -O2 -c -w --openmp -std=legacy
-FLINK = gfortran -w -o $(EXEC) --openmp
+FOMP = --openmp
+FENDOMP = -lgomp
 
-endif
 
 SRC = ../src
 
-.PHONY: all clean list
+.PHONY: all lib clean list
 
-OBJECTS =  ext_dir_daria_datgen.o \
-  prini_new.o \
+OBJECTS =  prini_new.o \
   legeexps.o \
   pplot2.o \
   hkrand.o \
@@ -60,14 +57,21 @@ OBJECTS =  ext_dir_daria_datgen.o \
 #
 
 %.o : %.f %h
-	$(FC) $(FFLAGS) $< -o $@
+	$(FC) -c $(FFLAGS) $< -o $@
 
 %.o : %.f90
-	$(FC) $(FFLAGS) $< -o $@
+	$(FC) -c $(FFLAGS) $< -o $@
 
 all: $(OBJECTS)
 	rm -f $(EXEC)
 	$(FLINK) $(OBJECTS) $(FEND)
+
+lib: $(OBJECTS)
+	$(FC) -shared -fPIC $(OBJECTS) -o libdirdatgen.so $(FEND)
+
+example: lib 
+	$(FC) $(FFLAGS) $(FOMP) ext_dir_daria_datgen.f -o $(EXEC) $(FEND) -L. -ldirdatgen $(FENDOMP)
+	./$(EXEC)
 
 clean:
 	rm -f $(OBJECTS)

@@ -148,7 +148,6 @@ cc      call prinf('nch=*',nch,1)
 
       
       call findnearmem(cm,nch,radtmp,8,srcinfo,n,nnz)
-      call prinf('nnz=*',nnz,1)
 
       allocate(row_ptr(n+1),col_ptr(nch+1))
       allocate(row_ind(nnz),col_ind(nnz),iarr(nnz))
@@ -173,7 +172,6 @@ cc      call prinf('nch=*',nch,1)
         enddo
       enddo
 
-      call prin2('finished getting ximat*',i,0)
 
       allocate(srcover(8,kover,nch))
 c
@@ -186,7 +184,6 @@ c
      1   8,ximat,kover,beta,srcover(1,1,ich),8)
       enddo
 
-      call prinf('finished oversamling*',i,0)
 
       allocate(xtmp3(k,kover))
 c
@@ -233,7 +230,6 @@ C$OMP$PRIVATE(i,j,xtmp,xtmp2,xtmp3)
       enddo
 C$OMP END PARALLEL DO     
  
-      call prinf('finished n2 work*',i,0)
 
 c
 c  now correct the near part of the matrices

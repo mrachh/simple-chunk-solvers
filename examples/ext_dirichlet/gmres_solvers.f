@@ -98,7 +98,6 @@ C$OMP END PARALLEL DO
         svec(it) = cs(it)*svec(it)
         rmyerr = abs(svec(it1))/rb
         errs(it) = rmyerr
-        print *, "iter=",it,errs(it)
 
         if(rmyerr.le.eps.or.it.eq.numit) then
 

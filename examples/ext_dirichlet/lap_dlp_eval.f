@@ -73,7 +73,6 @@ c
       enddo
 c      
       call findnearmem(cm,nch,radtmp,2,targs,nt,nnz)
-      call prinf('nnz=*',nnz,1)
 c
       allocate(row_ptr(nt+1))
       allocate(col_ind(nnz))
@@ -109,7 +108,6 @@ c
         call dgemm('n','t',2,kover,k,alpha,mu(1,ich),
      1   2,ximat,kover,beta,muover(1,ich),2)
       enddo
-ccc      call prinf('finished oversamling*',i,0)
 c
 c   call the fmm to compute all interactions
 c
