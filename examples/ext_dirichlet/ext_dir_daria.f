@@ -19,6 +19,7 @@
       complex *16 a2,b2,pars1(10),pars2(10)
 
       real *8 xyin(2)
+      real *8, allocatable :: ts(:),umat(:,:),vmat(:,:),wts(:)
       complex *16 grad(100)
 
       complex *16, allocatable :: zrhs(:,:)
@@ -26,6 +27,8 @@
       real *8, allocatable :: targs(:,:)
       real *8, allocatable :: xtarg(:),ytarg(:)
       real *8 errs(1000),targ(2),src_normal(2),targ_normal(2)
+      integer, allocatable :: ixys(:),norders(:),iptype(:)
+      real *8, allocatable :: ab(:,:)
       integer, allocatable :: isin(:)
       complex *16, allocatable :: pottarg(:),pottargex(:)
       complex *16 zz,pot,potex,zpars(3),zid
@@ -42,14 +45,17 @@
 
       write(6,*)'zk = ',zk
       write(6,*)'thetain = ',thetain
-      eps = 1.0d-9
+      eps = 1.0d-4
       ier = 0
 c
 c     k is order of accuracy of chunk discretization
 c     chsmall is dyadic refinement parameter for corners
 c
       k = 16
-      chsmall = 1.0d-3
+      itype = 2
+      allocate(ts(k),umat(k,k),vmat(k,k),wts(k))
+      call legeexps(itype,k,ts,umat,vmat,wts)
+      chsmall = 1.0d-2*pi
       ta = 0
       tb = 1.0d0
 c
@@ -61,6 +67,8 @@ c
       nover = 1
       allocate(chunks(2,k,maxc),ders(2,k,maxc),ders2(2,k,maxc))
       allocate(adjs(2,maxc),hs(maxc))
+      allocate(srcvals(8,k,maxc),srccoefs(6,k,maxc),whts(k,maxc))
+      allocate(ixys(maxc+1),norders(maxc),iptype(maxc),ab(2,maxc))
 c
 c     npw = points per wavelength
 c     ireflinel,irefiner = 1 means refine to corner
@@ -73,23 +81,35 @@ c
 c
 c     straight sides
 c
+      ndd = 4
+      ndz = 0
+      ndi = 0
+      nwav = real(zk)*rlmax/2/pi
+      rlmax = (k+0.0d0)/real(zk)/npw*2*pi
       do ii = 1,3
-         call chunkfunczk(zk,npw,eps,ifclosed,irefinel,
-     1     irefiner,chsmall,ta,tb,fcurve1,parsall(1,ii),nover,k,
-     1       nch1,chunks(1,1,nch+1),adjs(1,nch+1),
-     1       ders(1,1,nch+1),ders2(1,1,nch+1),hs(nch+1))
+         nch1 = 0
+         call chunkfunc_guru(eps,rlmax,ifclosed,irefinel,
+     1    irefiner,chsmall,ta,tb,fcurve1,ndd,parsall(1,ii),
+     2    ndz,zpars,ndi,ipars,nover,k,maxc,nch1,norders(nch+1),
+     3    ixys,iptype(nch+1),n0,srcvals(1,1,nch+1),srccoefs(1,1,nch+1),
+     4    ab(1,nch+1),adjs(1,nch+1),ier)
+
          nch = nch+nch1
-      call prinf('nch=*',nch,1)
       enddo
 c
 c     top side defined by sine series
 c
-      call chunkfunczk(zk,npw,eps,ifclosed,irefinel,
-     1     irefiner,chsmall,ta,tb,fcurve,parsall(1,4),nover,k,
-     1       nch1,chunks(1,1,nch+1),adjs(1,nch+1),
-     1       ders(1,1,nch+1),ders2(1,1,nch+1),hs(nch+1))
+      ndd0 = nint(parsall(3,4))
+      ndd = ndd0 + 3
+      call chunkfunc_guru(eps,rlmax,ifclosed,irefinel,
+     1  irefiner,chsmall,ta,tb,fcurve,ndd,parsall(1,4),
+     2  ndz,zpars,ndi,ipars,nover,k,maxc,nch1,norders(nch+1),
+     3  ixys,iptype(nch+1),n0,srcvals(1,1,nch+1),srccoefs(1,1,nch+1),
+     4  ab(1,nch+1),adjs(1,nch+1),ier)
+
       nch = nch+nch1
-      call prinf('nch=*',nch,1)
+      print *, "nch=",nch
+cc      call prinf('nch=*',nch,1)
 c
       ntot = k*nch
       allocate(xmat(ntot,ntot))
@@ -99,10 +119,12 @@ c
       t1 = second()
       a2 = eye*(0.8 + 1.2*zk)
       b2 = 1.0d0
-c
-      allocate(srcvals(8,k,nch),srccoefs(6,k,nch),whts(k,nch))
-      call chunks_to_srcinfo(k,nch,chunks,ders,ders2,hs,srcvals,
-     1  srccoefs,whts)
+      do i=1,nch
+        do j=1,k
+          rr = sqrt(srcvals(3,j,i)**2 + srcvals(4,j,i)**2)
+          whts(j,i) = rr*wts(j) 
+        enddo
+      enddo
 c
       n = k*nch
       zpars(1) = zk
@@ -139,7 +161,7 @@ C$      t2 = omp_get_wtime()
       zid = b2/2
       numit = 200
       niter = 0
-      eps = 1.0d-12
+      eps = 1.0d-8
       call cpu_time(t1)
       call zgmres_solver(n,xmat,zid,zrhs,numit,eps,niter,errs,rres,
      1   zsoln)
@@ -188,6 +210,10 @@ c
      1       pottargex(i))
          enddo
       endif
+
+      print *, "before target evaluation"
+      print *, "ntarg=",ntarg
+      print *, "n=",n
 c
       call helm2d_comb_dir_targ(k,nch,n,srccoefs,srcvals,zpars,zsoln,
      1  ntarg,targs,pottarg)
@@ -224,33 +250,35 @@ c
 c
 c
 c
+c
+c
+c
+c
+c
 
-        subroutine fcurve(t,pars,x,y,dxdt,dydt,dxdt2,dydt2)
+        subroutine fcurve(t,ndd,dpars,ndz,zpars,ndi,ipars,
+     1     x,y,dxdt,dydt,dxdt2,dydt2)
         implicit real *8 (a-h,o-z)
-        real *8 pars(1)
+        real *8 dpars(ndd)
+        complex *16 zpars(ndz)
+        integer ipars(ndi)
 c
 c
 c       seg is   p1  ------- p2 , sin series 
 c
         pi = 4.0d0*datan(1.0d0)
 c
-        x = pars(1) + t*(pars(2)-pars(1))
-        dxdt= pars(2)-pars(1)
+        x = dpars(1) + t*(dpars(2)-dpars(1))
+        dxdt= dpars(2)-dpars(1)
         dxdt2= 0.0d0
 c
-        norder = nint(pars(3))
-ccc        y = x*(pi-x)
-ccc        dydt=-2*x + pi
-ccc        dydt2=-2.0d0
-ccc        y = x*(pi-x)
-ccc        dydt=(-2*x+pi)*dxdt
-ccc        dydt2=-2.0d0*dxdt*dxdt
+        norder = nint(dpars(3))
         y = 0.d0
         dydt= 0.0d0
         dydt2= 0.0d0
         do i = 1,norder
-           rinc = pars(3+i)*dsin(i*x)
-           rincp = pars(3+i)*dcos(i*x)
+           rinc = dpars(3+i)*dsin(i*x)
+           rincp = dpars(3+i)*dcos(i*x)
            y= y+ rinc
            dydt=dydt+ i*rincp*dxdt
            dydt2=dydt2- rinc*(i*dxdt)**2
@@ -262,19 +290,22 @@ c
 c
 c
 c
-        subroutine fcurve1(t,pars,x,y,dxdt,dydt,dxdt2,dydt2)
+        subroutine fcurve1(t,ndd,dpars,ndz,zpars,ndi,ipars,
+     1     x,y,dxdt,dydt,dxdt2,dydt2)
         implicit real *8 (a-h,o-z)
-        real *8 pars(1)
+        real *8 dpars(ndd)
+        complex *16 zpars(ndz)
+        integer ipars(ndi)
 c
 c       polygonal segment defined by 
 c       x in [pars(1),pars(2), y in [pars(3)mparrs(4)] 
 c       assuming t in [0,1].
 c
-        x = pars(1) + t*(pars(2)-pars(1))
-        y = pars(3) + t*(pars(4)-pars(3))
+        x = dpars(1) + t*(dpars(2)-dpars(1))
+        y = dpars(3) + t*(dpars(4)-dpars(3))
 
-        dxdt=pars(2)-pars(1)
-        dydt=pars(4)-pars(3)
+        dxdt=dpars(2)-dpars(1)
+        dydt=dpars(4)-dpars(3)
 c
         dxdt2=0.0d0
         dydt2=0.0d0

@@ -135,7 +135,7 @@ c
       allocate(cm(2,nch),rads(nch),radtmp(nch))
       
       call get_cm_rad(k,nch,srcinfo,cm,rads)
-      rfac = 1.5d0
+      rfac = 2.0d0
       do i=1,nch
         radtmp(i) = rads(i)*rfac
       enddo
@@ -180,8 +180,15 @@ c
       alpha = 1.0d0
       beta = 0.0d0
       do ich=1,nch
-        call dgemm('n','t',8,kover,k,alpha,srcinfo(1,1,ich),
-     1   8,ximat,kover,beta,srcover(1,1,ich),8)
+        do j=1,kover
+          do i=1,8
+            srcover(i,j,ich) = 0
+            do l=1,k
+              srcover(i,j,ich) = srcover(i,j,ich) + 
+     1           ximat(j,l)*srcinfo(i,l,ich)
+            enddo
+          enddo
+        enddo
       enddo
 
 
@@ -222,8 +229,16 @@ C$OMP$PRIVATE(i,j,xtmp,xtmp2,xtmp3)
                 xtmp3(i,j) = xtmp3(i,j)*dst
               enddo
             enddo
-            call zgemm('n','n',k,k,kover,zalpha,xtmp3,k,zximat,
-     1        kover,zbeta,xtmp,k)
+            do j=1,k
+              do i=1,k
+                xtmp(i,j) = 0
+                do l=1,kover
+                  xtmp(i,j) = xtmp(i,j) + xtmp3(i,l)*ximat(l,j) 
+                enddo
+              enddo
+            enddo
+c            call zgemm('n','n',k,k,kover,zalpha,xtmp3,k,zximat,
+c     1        kover,zbeta,xtmp,k)
           endif
           call zinsertmat(k,k,xtmp,itmat,ismat,n,n,xmat)
         enddo
@@ -295,7 +310,14 @@ c
         do j=1,k
           tsrc = xs0(j,i)
           call legepols(tsrc,k-1,pols)
-          call dgemv('n',6,k,alpha,srccoefs,6,pols,1,beta,srcinfo,1)
+          do m=1,8
+            srcinfo(m) = 0
+          enddo
+          do l=1,k
+            do m=1,6
+              srcinfo(m) = srcinfo(m) + srccoefs(m,l)*pols(l)
+            enddo
+          enddo
           dst = sqrt(srcinfo(3)**2 + srcinfo(4)**2)
           srcinfo(7) = srcinfo(4)/dst
           srcinfo(8) = -srcinfo(3)/dst
@@ -305,8 +327,13 @@ c
           wtmp2(j) = wtmp2(j)*whts0(j,i)*dst
         enddo
 
-        call dgemm('n','n',2,k,k,alpha,wtmp2,2,ainterp(1,1,i),k,beta,
-     1    wtmp3,2) 
+        do j=1,k
+          wtmp3(j) = 0
+          do l=1,k
+            wtmp3(j) = wtmp3(j) + wtmp2(l)*ainterp(l,j,i)
+          enddo
+        enddo
+
         do j=1,k
           xmat(i,j) = wtmp3(j)
         enddo
@@ -482,6 +509,7 @@ c
       real *8 t(m),w(m)
       complex *16 vals(k),val
       external fker
+
       
       do i=1,k
         vals(i) = 0
@@ -495,7 +523,15 @@ c
       do i=1,m
         tt = u*t(i)+v
         call legepols(tt,k-1,pols) 
-        call dgemv('n',6,k,alpha,srccoefs,6,pols,1,beta,srctmp,1)
+
+        do j=1,8
+          srctmp(j) = 0
+        enddo
+        do l=1,k
+          do j=1,6
+            srctmp(j) = srctmp(j) + srccoefs(j,l)*pols(l)
+          enddo
+        enddo
         dst = sqrt(srctmp(3)**2 + srctmp(4)**2)
         srctmp(7) = srctmp(4)/dst
         srctmp(8) = -srctmp(3)/dst
@@ -527,17 +563,16 @@ c
       complex *16 :: alpha, beta
 
 
-      allocate(bz(n,k))
-      bz = 0
-      call dcopy(n*k,b,1,bz,2)
 
-      transa = 'T'
-      transb = 'N'
-      alpha = 1
-      beta = 0
+      do i=1,m
+        do j=1,k
+          c(j,i) = 0
+          do l=1,n
+            c(j,i) = c(j,i) + a(l,i)*b(l,j)
+          enddo
+        enddo
+      enddo
 
-      call zgemm(transa, transb, k, m, n, alpha, bz, n, a, n,
-     1     beta, c, k)
 
       return
       end

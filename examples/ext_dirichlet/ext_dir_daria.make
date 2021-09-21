@@ -16,7 +16,7 @@ SRC = ../src
 
 .PHONY: all clean list
 
-OBJECTS =  ext_dir_daria.o daria_getspecs.f \
+OBJECTS =  ext_dir_daria.o daria_getspecs.o \
   prini.o \
   legeexps.o \
   pplot2.o \

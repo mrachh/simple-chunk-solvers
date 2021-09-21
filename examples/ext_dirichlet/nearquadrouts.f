@@ -234,12 +234,10 @@ c
 
        allocate(targs(2,nt))
 
-C$OMP PARALLEL DO DEFAULT(SHARED)
        do i=1,nt
          targs(1,i) = targets(1,i)
          targs(2,i) = targets(2,i)
        enddo
-C$OMP END PARALLEL DO       
 
 
 
@@ -391,12 +389,10 @@ c
 
        allocate(targs(2,nt))
 
-C$OMP PARALLEL DO DEFAULT(SHARED)
        do i=1,nt
          targs(1,i) = targets(1,i)
          targs(2,i) = targets(2,i)
        enddo
-C$OMP END PARALLEL DO       
 
 
        mnbors = 27

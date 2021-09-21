@@ -607,14 +607,14 @@ c
       do ilev=nlevels-1,1,-1
 
        if(zi*boxsize(ilev).lt.zkiupbound) then
-C$OMP PARALLEL DO DEFAULT(SHARED)
-C$OMP$PRIVATE(ibox,jbox,i,nchild,istart,iend,npts,mptemp)
-C$OMP$SCHEDULE(DYNAMIC)
          dlam = zk
          dlam = 1/(dlam/(2*pi))                 
          boxlam = boxsize(ilev)/dlam
 
          if(boxlam.le.8.0d0) then
+C$OMP PARALLEL DO DEFAULT(SHARED)
+C$OMP$PRIVATE(ibox,jbox,i,nchild,istart,iend,npts,mptemp)
+C$OMP$SCHEDULE(DYNAMIC)
            do ibox = laddr(1,ilev),laddr(2,ilev)
               nchild = itree(ipointer(3)+ibox-1)
               do i=1,nchild

@@ -3,7 +3,7 @@
       complex *16 zk
       character *300 fsol,ftarg
 
-      call prini(6,13)
+cc      call prini(6,13)
       done = 1
       pi = atan(done)*4
 
@@ -23,10 +23,10 @@ c
       iscat = 1
       itot = 1
       depth = pi
-      norder = 2
+      norder = 4
 
-      nbatsize = 50
-      nbat = 100
+      nbatsize = 40
+      nbat = 2
       nzk = 37
 C$OMP PARALLEL DO DEFAULT(SHARED) PRIVATE(ibat,iconf_start,iconf_end)
 C$OMP$PRIVATE(fsol,ftarg,iconf,parsall,rl1,rsc,izk,zk,i)
@@ -38,9 +38,11 @@ C$OMP$SCHEDULE(DYNAMIC)
         write(fsol,'(a,i4.4,a,i4.4,a,i2.2,a,i2.2,a,i1,a)') 
      1   'data/soln_iconf',iconf_start,'-',iconf_end,'_nzk',nzk,
      2   '_norder',norder,'_iscat',iscat,'.dat'
+        write(fsol,'(a,i1,a)') 'sol_ibat',ibat,'.dat'
         write(ftarg,'(a,i4.4,a,i4.4,a,i2.2,a,i2.2,a,i1,a)') 
      1   'data/targ_iconf',iconf_start,'-',iconf_end,'_nzk',nzk,
      2   '_norder',norder,'_iscat',iscat,'.dat'
+        write(ftarg,'(a,i1,a)') 'targ_ibat',ibat,'.dat'
         open(unit=33+ibat,file=trim(ftarg))
         open(unit=233+ibat,file=trim(fsol))
         write(33+ibat,*) ntarg,norder
@@ -201,6 +203,7 @@ c
       rlmax = (k+0.0d0)/real(zk)/npw*2*pi
       do ii = 1,3
          nch1 = 0
+         ier = 0
          call chunkfunc_guru(eps,rlmax,ifclosed,irefinel,
      1    irefiner,chsmall,ta,tb,fcurve1,ndd,parsall(1,ii),
      2    ndz,zpars,ndi,ipars,nover,k,maxc,nch1,norders(nch+1),
@@ -214,6 +217,7 @@ c     top side defined by sine series
 c
       ndd0 = nint(parsall(3,4))
       ndd = ndd0 + 3
+      ier = 0
       call chunkfunc_guru(eps,rlmax,ifclosed,irefinel,
      1  irefiner,chsmall,ta,tb,fcurve,ndd,parsall(1,4),
      2  ndz,zpars,ndi,ipars,nover,k,maxc,nch1,norders(nch+1),
@@ -221,6 +225,7 @@ c
      4  ab(1,nch+1),adjs(1,nch+1),ier)
 
       nch = nch+nch1
+
 cc      call prinf('nch=*',nch,1)
 c
       ntot = k*nch
@@ -245,13 +250,9 @@ c
 c
 c  get the matrix
 c
-      call cpu_time(t1)
-C$       t1 = omp_get_wtime()
 
       call helm2d_comb_dir_mat(k,nch,n,srcvals,srccoefs,zpars,xmat)
 
-      call cpu_time(t2)
-C$      t2 = omp_get_wtime()      
       
 cc      call prin2('matrix generation time=*',t2-t1,1)
 
@@ -272,22 +273,22 @@ cc      call prin2('matrix generation time=*',t2-t1,1)
       numit = 200
       niter = 0
       eps = 1.0d-8
-      call cpu_time(t1)
       call zgmres_solver(n,xmat,zid,zrhs,numit,eps,niter,errs,rres,
      1   zsoln)
-      call cpu_time(t2)
       
 cc      call prin2('solve time=*',t2-t1,1)
       
-
       allocate(pottargex(ntarg),
      1   pottarg(ntarg))
-      allocate(idt(ntarg))
 c
-      do i = 1,nch
-         iregionl(i) = 1
-         iregionr(i) = 0
+
+      do i=1,ntarg
+        pottargex(i) = 0
+        pottarg(i) = 0
+
       enddo
+
+
 c
       if (iscat.eq.0) then
          do i = 1,ntarg
@@ -295,6 +296,7 @@ c
      1       pottargex(i))
          enddo
       endif
+
 c
       call helm2d_comb_dir_targ(k,nch,n,srccoefs,srcvals,zpars,zsoln,
      1  ntarg,targs,pottarg)

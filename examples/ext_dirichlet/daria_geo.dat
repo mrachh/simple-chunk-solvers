@@ -1,8 +1,12 @@
-1        ! iscat 0 means test using exact solution, pt source, 1 - plane wave
+0        ! iscat 0 means test using exact solution, pt source, 1 - plane wave
 1        ! itot 1 means compute total field, 0 means just scattered field
-3        ! depth of slab
-30        ! number of fourier modes
-10.2d0    ! Helmholtz coeff
+3.1415926535897931d0  ! depth of slab
+4        ! number of fourier modes
+2.75d0    ! Helmholtz coeff
+0.11584829052601205     
+0.18203235055968003     
+-2.7606542226972751E-002
+9.7931297868936271E-002
 0.2d0    !  mode 1
 0.3d0
 0.2d0

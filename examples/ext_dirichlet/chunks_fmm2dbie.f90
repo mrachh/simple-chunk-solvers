@@ -302,8 +302,14 @@
             
           enddo
 
-          call dgemm('n','t',2,k,k,alpha,fvals,2,ximat,k, &
-              beta,finterp,2)
+          do j=1,k
+            do i=1,2
+              finterp(i,j) = 0
+              do l=1,k
+                finterp(i,j) = finterp(i,j) + fvals(i,l)*ximat(j,l)
+              enddo
+            enddo
+          enddo
 
           err1a = 0
           err2a = 0
@@ -743,8 +749,17 @@
           srcvals(7,ipt) = dy/ds
           srcvals(8,ipt) = -dx/ds
         enddo
-        call dgemm('n','t',6,k,k,alpha,srcvals(1,ixys(i)),8,u,k, &
-            beta,srccoefs(1,ixys(i)),6)
+
+        do j=1,k
+          do idim=1,6
+            srccoefs(idim,ixys(i)+j-1) = 0
+            do l=1,k
+              srccoefs(idim,ixys(i)+j-1) = srccoefs(idim,ixys(i)+j-1)+&
+                   srcvals(idim,ixys(i)+l-1)*u(j,l)
+            enddo
+          enddo
+        enddo
+
         ich = adjs(2,ich)
       enddo
       ixys(nch+1) = nch*k+1
